@@ -1,0 +1,5 @@
+{
+  "name": "LaunchPad AI",
+  "description": "A live Gemini audio agent that coaches students via natural voice, syncing with school schedules for proactive reminders.",
+  "requestFramePermissions": ["microphone"]
+}
