@@ -4,6 +4,9 @@ export interface SchoolClass {
   time: string;
   day: string;
   notes: string;
+  topics?: string;
+  materials?: string;
+  homework?: string;
 }
 
 export interface Exam {
@@ -11,11 +14,19 @@ export interface Exam {
   subject: string;
   date: string;
   topics: string;
+  prerequisites?: string;
+}
+
+export interface StudentProfile {
+  name: string;
+  grade: string;
+  goals: string;
 }
 
 export interface SchoolData {
   timetable: SchoolClass[];
   exams: Exam[];
+  profile: StudentProfile;
 }
 
-export type SchoolDataCategory = 'timetable' | 'exams';
+export type SchoolDataCategory = 'timetable' | 'exams' | 'profile';

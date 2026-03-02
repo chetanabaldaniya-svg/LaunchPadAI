@@ -1,5 +1,5 @@
 import { INITIAL_SCHOOL_DATA } from '../constants';
-import { SchoolData, SchoolClass, Exam, SchoolDataCategory } from '../types';
+import { SchoolData, SchoolClass, Exam, SchoolDataCategory, StudentProfile } from '../types';
 
 class SchoolDataService {
   private data: SchoolData;
@@ -10,6 +10,10 @@ class SchoolDataService {
     if (stored) {
       try {
         this.data = JSON.parse(stored);
+        // Ensure profile exists if loading from old data
+        if (!this.data.profile) {
+            this.data.profile = { ...INITIAL_SCHOOL_DATA.profile };
+        }
       } catch (e) {
         console.error('Failed to parse stored school data', e);
         this.data = { ...INITIAL_SCHOOL_DATA };
@@ -31,11 +35,17 @@ class SchoolDataService {
     return this.data.exams;
   }
 
+  getProfile(): StudentProfile {
+    return this.data.profile;
+  }
+
   getData(category: SchoolDataCategory): any {
     if (category === 'timetable') {
       return this.getTimetable();
     } else if (category === 'exams') {
       return this.getExams();
+    } else if (category === 'profile') {
+      return this.getProfile();
     }
     return null;
   }
@@ -50,50 +60,63 @@ class SchoolDataService {
     this.save();
   }
 
-  addSchoolClass(name: string, time: string, day: string, notes: string) {
+  updateProfile(profile: StudentProfile) {
+    this.data.profile = profile;
+    this.save();
+  }
+
+  addSchoolClass(name: string, time: string, day: string, notes: string, topics: string = '', materials: string = '', homework: string = '') {
     const newClass: SchoolClass = {
       id: Date.now().toString(),
       name,
       time,
       day,
-      notes
+      notes,
+      topics,
+      materials,
+      homework
     };
     this.data.timetable.push(newClass);
     this.save();
     return newClass;
   }
 
-  addExam(subject: string, date: string, topics: string) {
+  addExam(subject: string, date: string, topics: string, prerequisites: string = '') {
     const newExam: Exam = {
       id: Date.now().toString(),
       subject,
       date,
-      topics
+      topics,
+      prerequisites
     };
     this.data.exams.push(newExam);
     this.save();
     return newExam;
   }
 
-  updateExam(id: string, date?: string, topics?: string, subject?: string) {
+  updateExam(id: string, date?: string, topics?: string, subject?: string, prerequisites?: string) {
     const examIndex = this.data.exams.findIndex(e => e.id === id);
     if (examIndex !== -1) {
       if (date) this.data.exams[examIndex].date = date;
       if (topics) this.data.exams[examIndex].topics = topics;
       if (subject) this.data.exams[examIndex].subject = subject;
+      if (prerequisites !== undefined) this.data.exams[examIndex].prerequisites = prerequisites;
       this.save();
       return this.data.exams[examIndex];
     }
     return null;
   }
 
-  updateSchoolClass(id: string, name?: string, time?: string, day?: string, notes?: string) {
+  updateSchoolClass(id: string, name?: string, time?: string, day?: string, notes?: string, topics?: string, materials?: string, homework?: string) {
     const classIndex = this.data.timetable.findIndex(c => c.id === id);
     if (classIndex !== -1) {
       if (name) this.data.timetable[classIndex].name = name;
       if (time) this.data.timetable[classIndex].time = time;
       if (day) this.data.timetable[classIndex].day = day;
       if (notes) this.data.timetable[classIndex].notes = notes;
+      if (topics !== undefined) this.data.timetable[classIndex].topics = topics;
+      if (materials !== undefined) this.data.timetable[classIndex].materials = materials;
+      if (homework !== undefined) this.data.timetable[classIndex].homework = homework;
       this.save();
       return this.data.timetable[classIndex];
     }

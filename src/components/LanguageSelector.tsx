@@ -21,7 +21,7 @@ export const LanguageSelector: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-slate-50 rounded-full border border-slate-200 text-slate-600 transition-colors shadow-sm"
       >
-        <Languages className="w-4 h-4 text-blue-600" />
+        <Languages className="w-4 h-4 text-emerald-600" />
         <span className="text-sm font-medium">{currentLanguage.native}</span>
       </button>
 
@@ -49,7 +49,7 @@ export const LanguageSelector: React.FC = () => {
                     className={`
                       w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors
                       ${language === lang.name 
-                        ? 'bg-blue-50 text-blue-600' 
+                        ? 'bg-emerald-50 text-emerald-600' 
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
                     `}
                   >

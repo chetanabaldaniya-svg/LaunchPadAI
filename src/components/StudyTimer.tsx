@@ -25,7 +25,7 @@ export const StudyTimer: React.FC = () => {
           <p className="text-slate-400 text-sm mb-4">Ready to focus?</p>
           <button 
             onClick={() => startSprint(25)}
-            className="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2 mx-auto"
+            className="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-2 mx-auto"
           >
             <Zap className="w-4 h-4" />
             Start 25m Sprint
@@ -36,11 +36,11 @@ export const StudyTimer: React.FC = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-900 to-slate-900 border border-blue-800 rounded-2xl p-6 relative overflow-hidden shadow-xl">
+    <div className="bg-gradient-to-br from-emerald-900 to-slate-900 border border-emerald-800 rounded-2xl p-6 relative overflow-hidden shadow-xl">
       {/* Background Progress Bar */}
       <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
         <motion.div 
-          className="h-full bg-blue-400"
+          className="h-full bg-emerald-400"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 1, ease: "linear" }}
@@ -50,10 +50,10 @@ export const StudyTimer: React.FC = () => {
       <div className="flex justify-between items-start mb-2">
         <div>
           <h3 className="text-white font-medium flex items-center gap-2">
-            <Zap className="w-4 h-4 fill-blue-400 text-blue-400" />
+            <Zap className="w-4 h-4 fill-emerald-400 text-emerald-400" />
             {topic || 'Focus Session'}
           </h3>
-          <p className="text-xs text-blue-200/60 uppercase tracking-wider font-mono mt-1">
+          <p className="text-xs text-emerald-200/60 uppercase tracking-wider font-mono mt-1">
             {isActive ? 'Sprint Active' : 'Paused'}
           </p>
         </div>

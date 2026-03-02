@@ -36,13 +36,13 @@ export const LiveAgent: React.FC = () => {
     <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
       {/* Status Indicator */}
       <div className="flex items-center gap-2 text-sm font-medium tracking-wider uppercase text-slate-500">
-        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-blue-600 shadow-[0_0_10px_#2563eb]' : 'bg-slate-300'}`} />
+        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-600 shadow-[0_0_10px_#059669]' : 'bg-slate-300'}`} />
         {isConnected ? (isSpeaking ? 'Agent Speaking' : 'Listening...') : 'Offline'}
       </div>
 
       {/* Visualizer */}
       <div className="w-full relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
+        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-green-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
         <AudioVisualizer isListening={isListening} isSpeaking={isSpeaking} />
       </div>
 
@@ -56,7 +56,7 @@ export const LiveAgent: React.FC = () => {
           transition-all duration-300 shadow-xl
           ${isConnected 
             ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' 
-            : 'bg-blue-600 text-white border border-blue-500 hover:bg-blue-500 shadow-[0_0_30px_rgba(37,99,235,0.3)]'}
+            : 'bg-emerald-600 text-white border border-emerald-500 hover:bg-emerald-500 shadow-[0_0_30px_rgba(5,150,105,0.3)]'}
         `}
       >
         {isConnected ? (
@@ -67,7 +67,7 @@ export const LiveAgent: React.FC = () => {
         
         {/* Ripple Effect when connecting */}
         {!isConnected && (
-          <span className="absolute inset-0 rounded-full border border-blue-500/30 animate-ping" />
+          <span className="absolute inset-0 rounded-full border border-emerald-500/30 animate-ping" />
         )}
       </motion.button>
 

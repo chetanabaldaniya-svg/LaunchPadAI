@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { schoolDataService } from '../services/schoolData';
 import { SchoolClass, Exam } from '../types';
-import { Edit2, Save, X, Calendar, Clock, BookOpen } from 'lucide-react';
+import { Edit2, Save, X, Calendar, Clock, BookOpen, Info } from 'lucide-react';
 
 export const ScheduleEditor: React.FC = () => {
   const [timetable, setTimetable] = useState<SchoolClass[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [deletingItem, setDeletingItem] = useState<{ type: 'class' | 'exam', id: string } | null>(null);
+  const [editingExam, setEditingExam] = useState<Exam | null>(null);
+  const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
 
   useEffect(() => {
     setTimetable(schoolDataService.getTimetable());
@@ -45,8 +49,8 @@ export const ScheduleEditor: React.FC = () => {
     setDeletingItem(null);
   };
 
-  const handleAddClass = () => {
-    schoolDataService.addSchoolClass("New Class", "09:00 AM", "Monday", "Notes");
+  const handleAddClass = (day: string) => {
+    schoolDataService.addSchoolClass("New Class", "09:00 AM", day, "Notes");
     setTimetable(schoolDataService.getTimetable());
   };
 
@@ -68,7 +72,7 @@ export const ScheduleEditor: React.FC = () => {
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
             ${isEditing 
-              ? 'bg-blue-600 text-white hover:bg-blue-700' 
+              ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
               : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'}
           `}
         >
@@ -79,7 +83,7 @@ export const ScheduleEditor: React.FC = () => {
 
       {/* Timetable Grid */}
       <div className="grid gap-4">
-        <h3 className="text-sm font-mono text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-mono text-emerald-600 uppercase tracking-wider mb-2 flex items-center gap-2">
           <Clock className="w-4 h-4" /> Weekly Timetable
         </h3>
         <div className="space-y-6">
@@ -111,7 +115,7 @@ export const ScheduleEditor: React.FC = () => {
                               );
                               setTimetable(newTimetable);
                             }}
-                            className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                           />
                         ) : item.time}
                       </div>
@@ -125,7 +129,7 @@ export const ScheduleEditor: React.FC = () => {
                               );
                               setTimetable(newTimetable);
                             }}
-                            className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                           />
                         ) : item.name}
                       </div>
@@ -139,15 +143,23 @@ export const ScheduleEditor: React.FC = () => {
                               );
                               setTimetable(newTimetable);
                             }}
-                            className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                           />
                         ) : item.notes}
                       </div>
                       {isEditing && (
-                        <div className="col-span-1 flex justify-center">
+                        <div className="col-span-1 flex justify-center gap-1">
+                          <button 
+                            onClick={() => setEditingClass(item)}
+                            className="p-1 text-emerald-400 hover:bg-emerald-50 rounded-md transition-colors"
+                            title="Edit Details"
+                          >
+                            <Info className="w-4 h-4" />
+                          </button>
                           <button 
                             onClick={() => handleDeleteClass(item.id)}
                             className="p-1 text-red-400 hover:bg-red-50 rounded-md transition-colors"
+                            title="Delete Class"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -161,28 +173,55 @@ export const ScheduleEditor: React.FC = () => {
                     </div>
                   )}
                 </div>
+                {isEditing && (
+                  <div className="p-2 border-t border-slate-200 bg-slate-50">
+                    <button
+                      onClick={() => handleAddClass(day)}
+                      className="w-full py-2 flex items-center justify-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors border border-dashed border-emerald-200"
+                    >
+                      + Add Class to {day}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
-          
-          {isEditing && (
-            <div className="p-2 border-t border-slate-200 bg-slate-50 rounded-xl">
-              <button
-                onClick={handleAddClass}
-                className="w-full py-2 flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-dashed border-blue-200"
-              >
-                + Add New Class
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Exams Grid */}
       <div className="grid gap-4">
-        <h3 className="text-sm font-mono text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-          <Calendar className="w-4 h-4" /> Upcoming Exams
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-mono text-emerald-600 uppercase tracking-wider flex items-center gap-2">
+            <Calendar className="w-4 h-4" /> Upcoming Exams
+          </h3>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={filterStartDate}
+              onChange={(e) => setFilterStartDate(e.target.value)}
+              className="bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-600 focus:outline-none focus:border-emerald-500"
+              placeholder="Start Date"
+            />
+            <span className="text-slate-400 text-xs">-</span>
+            <input
+              type="date"
+              value={filterEndDate}
+              onChange={(e) => setFilterEndDate(e.target.value)}
+              className="bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-600 focus:outline-none focus:border-emerald-500"
+              placeholder="End Date"
+            />
+            {(filterStartDate || filterEndDate) && (
+              <button
+                onClick={() => { setFilterStartDate(''); setFilterEndDate(''); }}
+                className="text-slate-400 hover:text-slate-600"
+                title="Clear Filter"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-slate-200 text-xs font-medium text-slate-400 uppercase tracking-wider">
             <div className="col-span-3">Date</div>
@@ -191,18 +230,29 @@ export const ScheduleEditor: React.FC = () => {
             {isEditing && <div className="col-span-1 text-center">Action</div>}
           </div>
           <div className="divide-y divide-slate-100">
-            {exams.map((item, index) => (
+            {exams
+              .filter(exam => {
+                if (!filterStartDate && !filterEndDate) return true;
+                const examDate = new Date(exam.date);
+                const start = filterStartDate ? new Date(filterStartDate) : null;
+                const end = filterEndDate ? new Date(filterEndDate) : null;
+
+                if (start && examDate < start) return false;
+                if (end && examDate > end) return false;
+                return true;
+              })
+              .map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-4 p-4 text-sm text-slate-700 hover:bg-slate-50 transition-colors items-center">
                 <div className="col-span-3 font-mono text-slate-500">
                   {isEditing ? (
                     <input 
+                      type="date"
                       value={item.date} 
                       onChange={(e) => {
-                        const newExams = [...exams];
-                        newExams[index].date = e.target.value;
+                        const newExams = exams.map(ex => ex.id === item.id ? { ...ex, date: e.target.value } : ex);
                         setExams(newExams);
                       }}
-                      className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     />
                   ) : item.date}
                 </div>
@@ -211,11 +261,10 @@ export const ScheduleEditor: React.FC = () => {
                     <input 
                       value={item.subject} 
                       onChange={(e) => {
-                        const newExams = [...exams];
-                        newExams[index].subject = e.target.value;
+                        const newExams = exams.map(ex => ex.id === item.id ? { ...ex, subject: e.target.value } : ex);
                         setExams(newExams);
                       }}
-                      className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     />
                   ) : item.subject}
                 </div>
@@ -224,19 +273,26 @@ export const ScheduleEditor: React.FC = () => {
                     <input 
                       value={item.topics} 
                       onChange={(e) => {
-                        const newExams = [...exams];
-                        newExams[index].topics = e.target.value;
+                        const newExams = exams.map(ex => ex.id === item.id ? { ...ex, topics: e.target.value } : ex);
                         setExams(newExams);
                       }}
-                      className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     />
                   ) : item.topics}
                 </div>
                 {isEditing && (
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-1 flex justify-center gap-1">
+                    <button 
+                      onClick={() => setEditingExam(item)}
+                      className="p-1 text-emerald-400 hover:bg-emerald-50 rounded-md transition-colors"
+                      title="Edit Details"
+                    >
+                      <Info className="w-4 h-4" />
+                    </button>
                     <button 
                       onClick={() => handleDeleteExam(item.id)}
                       className="p-1 text-red-400 hover:bg-red-50 rounded-md transition-colors"
+                      title="Delete Exam"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -249,7 +305,7 @@ export const ScheduleEditor: React.FC = () => {
             <div className="p-2 border-t border-slate-200 bg-slate-50">
               <button
                 onClick={handleAddExam}
-                className="w-full py-2 flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-dashed border-blue-200"
+                className="w-full py-2 flex items-center justify-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors border border-dashed border-emerald-200"
               >
                 + Add New Exam
               </button>
@@ -262,11 +318,151 @@ export const ScheduleEditor: React.FC = () => {
         <div className="flex justify-end pt-4 border-t border-slate-200">
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20"
           >
             <Save className="w-5 h-5" />
             Save All Changes
           </button>
+        </div>
+      )}
+
+      {/* Class Details Modal */}
+      {editingClass && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-slate-900">Class Details: {editingClass.name}</h3>
+              <button 
+                onClick={() => setEditingClass(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Topics Covered</label>
+                <input
+                  type="text"
+                  value={editingClass.topics || ''}
+                  onChange={(e) => setEditingClass({ ...editingClass, topics: e.target.value })}
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  placeholder="e.g., Quadratic Equations, Photosynthesis"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Required Materials</label>
+                  <input
+                    type="text"
+                    value={editingClass.materials || ''}
+                    onChange={(e) => setEditingClass({ ...editingClass, materials: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="e.g., Textbook, Calculator"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Homework</label>
+                  <input
+                    type="text"
+                    value={editingClass.homework || ''}
+                    onChange={(e) => setEditingClass({ ...editingClass, homework: e.target.value })}
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    placeholder="e.g., Read Ch. 4, Ex. 1-5"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">General Notes</label>
+                <textarea
+                  value={editingClass.notes}
+                  onChange={(e) => setEditingClass({ ...editingClass, notes: e.target.value })}
+                  className="w-full h-24 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                  placeholder="Any other important details..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setEditingClass(null)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const newTimetable = timetable.map(t => t.id === editingClass.id ? editingClass : t);
+                  setTimetable(newTimetable);
+                  setEditingClass(null);
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-colors"
+              >
+                Save Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exam Details Modal */}
+      {editingExam && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-slate-900">Exam Details: {editingExam.subject}</h3>
+              <button 
+                onClick={() => setEditingExam(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Topics to Cover</label>
+                <textarea
+                  value={editingExam.topics}
+                  onChange={(e) => setEditingExam({ ...editingExam, topics: e.target.value })}
+                  className="w-full h-32 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                  placeholder="List the specific topics..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Prerequisite Knowledge</label>
+                <textarea
+                  value={editingExam.prerequisites || ''}
+                  onChange={(e) => setEditingExam({ ...editingExam, prerequisites: e.target.value })}
+                  className="w-full h-24 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                  placeholder="What do you need to know before starting?"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setEditingExam(null)}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const newExams = exams.map(e => e.id === editingExam.id ? editingExam : e);
+                  setExams(newExams);
+                  setEditingExam(null);
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-colors"
+              >
+                Save Details
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

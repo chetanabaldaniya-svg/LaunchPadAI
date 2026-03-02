@@ -2,6 +2,7 @@ import React from 'react';
 import { LiveAgent } from './components/LiveAgent';
 import { ScheduleEditor } from './components/ScheduleEditor';
 import { StudyTimer } from './components/StudyTimer';
+import { StudentProfile } from './components/StudentProfile';
 import { StudyProvider } from './context/StudyContext';
 import { motion } from 'motion/react';
 import { Clock } from './components/Clock';
@@ -11,11 +12,11 @@ import { Rocket, GraduationCap, Settings, BookOpen } from 'lucide-react';
 export default function App() {
   return (
     <StudyProvider>
-      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-500/30 selection:text-blue-900 overflow-x-hidden">
+      <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-500/30 selection:text-emerald-900 overflow-x-hidden">
         {/* Background Elements */}
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-200/40 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-200/40 rounded-full blur-[120px]" />
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-emerald-100/40 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-green-100/40 rounded-full blur-[120px]" />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-100 contrast-150 mix-blend-overlay" />
         </div>
 
@@ -25,10 +26,10 @@ export default function App() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex items-center justify-between border-b border-slate-200 pb-8"
+            className="flex items-center justify-between border-b border-slate-100 pb-8"
           >
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+              <div className="p-3 bg-emerald-600 rounded-xl shadow-lg shadow-emerald-600/20">
                 <Rocket className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -44,7 +45,7 @@ export default function App() {
             <div className="flex items-center gap-4">
               <Clock />
               <LanguageSelector />
-              <button className="p-2 hover:bg-slate-200 rounded-lg transition-colors text-slate-400 hover:text-slate-600">
+              <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-400 hover:text-slate-600">
                 <Settings className="w-5 h-5" />
               </button>
               <div className="h-8 w-[1px] bg-slate-200" />
@@ -66,7 +67,7 @@ export default function App() {
               className="lg:col-span-5 flex flex-col gap-8"
             >
               <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500/0 via-blue-500/50 to-blue-500/0 opacity-50" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 opacity-50" />
                 
                 <div className="mb-8 text-center">
                   <h2 className="text-lg font-medium text-slate-900 mb-2">Voice Command Center</h2>
@@ -78,8 +79,8 @@ export default function App() {
                 <LiveAgent />
                 
                 <div className="mt-8 pt-8 border-t border-slate-100 grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-2 mb-2 text-blue-600">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-emerald-50 hover:border-emerald-100 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-2 mb-2 text-emerald-600">
                       <GraduationCap className="w-4 h-4" />
                       <span className="text-xs font-bold uppercase tracking-wider">Morning Check</span>
                     </div>
@@ -87,8 +88,8 @@ export default function App() {
                       Review today's classes and required items.
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-blue-50 hover:border-blue-100 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-2 mb-2 text-indigo-600">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-emerald-50 hover:border-emerald-100 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-2 mb-2 text-green-600">
                       <BookOpen className="w-4 h-4" />
                       <span className="text-xs font-bold uppercase tracking-wider">Study Sprint</span>
                     </div>
@@ -101,6 +102,9 @@ export default function App() {
 
               {/* Study Timer Component */}
               <StudyTimer />
+
+              {/* Student Profile */}
+              <StudentProfile />
 
             </motion.div>
 
