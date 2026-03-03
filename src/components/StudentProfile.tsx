@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { schoolDataService } from '../services/schoolData';
 import { StudentProfile as StudentProfileType } from '../types';
 import { User, GraduationCap, Target, Edit2, Save, Mic, MicOff } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Type definitions for Web Speech API
 interface SpeechRecognition extends EventTarget {
@@ -31,6 +32,7 @@ export const StudentProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeField, setActiveField] = useState<keyof StudentProfileType | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setProfile(schoolDataService.getProfile());
@@ -119,7 +121,7 @@ export const StudentProfile: React.FC = () => {
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 opacity-50" />
       
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-medium text-slate-900">Student Profile</h2>
+        <h2 className="text-lg font-medium text-slate-900">{t('studentProfile')}</h2>
         <button
           onClick={() => isEditing ? handleSave() : setIsEditing(true)}
           className={`
@@ -141,7 +143,7 @@ export const StudentProfile: React.FC = () => {
           </div>
           <div className="flex-1">
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-              Name
+              {t('name')}
             </label>
             <div className="flex items-center">
               {isEditing ? (
@@ -166,7 +168,7 @@ export const StudentProfile: React.FC = () => {
           </div>
           <div className="flex-1">
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-              Grade Level
+              {t('gradeLevel')}
             </label>
             <div className="flex items-center">
               {isEditing ? (
@@ -191,7 +193,7 @@ export const StudentProfile: React.FC = () => {
           </div>
           <div className="flex-1">
             <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
-              Current Goals
+              {t('currentGoals')}
             </label>
             <div className="flex items-start">
               {isEditing ? (

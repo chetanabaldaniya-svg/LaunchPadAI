@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { schoolDataService } from '../services/schoolData';
 import { SchoolClass, Exam } from '../types';
 import { Edit2, Save, X, Calendar, Clock, BookOpen, Info } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const ScheduleEditor: React.FC = () => {
   const [timetable, setTimetable] = useState<SchoolClass[]>([]);
@@ -12,6 +13,7 @@ export const ScheduleEditor: React.FC = () => {
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
   const [filterStartDate, setFilterStartDate] = useState('');
   const [filterEndDate, setFilterEndDate] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     setTimetable(schoolDataService.getTimetable());
@@ -65,7 +67,7 @@ export const ScheduleEditor: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-light tracking-tight text-slate-900">
-          Mission Data <span className="text-slate-400">/ School Schedule</span>
+          {t('missionDataSchedule')}
         </h2>
         <button
           onClick={() => isEditing ? handleSave() : setIsEditing(true)}
@@ -77,14 +79,14 @@ export const ScheduleEditor: React.FC = () => {
           `}
         >
           {isEditing ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
-          {isEditing ? 'Save Changes' : 'Edit Data'}
+          {isEditing ? t('saveChanges') : t('editData')}
         </button>
       </div>
 
       {/* Timetable Grid */}
       <div className="grid gap-4">
         <h3 className="text-sm font-mono text-emerald-600 uppercase tracking-wider mb-2 flex items-center gap-2">
-          <Clock className="w-4 h-4" /> Weekly Timetable
+          <Clock className="w-4 h-4" /> {t('weeklyTimetable')}
         </h3>
         <div className="space-y-6">
           {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day) => {
@@ -97,10 +99,10 @@ export const ScheduleEditor: React.FC = () => {
                   <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider">{day}</h4>
                 </div>
                 <div className="grid grid-cols-12 gap-4 p-4 border-b border-slate-100 text-xs font-medium text-slate-400 uppercase tracking-wider">
-                  <div className="col-span-2">Time</div>
-                  <div className="col-span-4">Class</div>
-                  <div className={isEditing ? "col-span-5" : "col-span-6"}>Notes</div>
-                  {isEditing && <div className="col-span-1 text-center">Action</div>}
+                  <div className="col-span-2">{t('time')}</div>
+                  <div className="col-span-4">{t('class')}</div>
+                  <div className={isEditing ? "col-span-5" : "col-span-6"}>{t('notes')}</div>
+                  {isEditing && <div className="col-span-1 text-center">{t('action')}</div>}
                 </div>
                 <div className="divide-y divide-slate-100">
                   {dayClasses.map((item) => (
@@ -169,7 +171,7 @@ export const ScheduleEditor: React.FC = () => {
                   ))}
                   {dayClasses.length === 0 && isEditing && (
                     <div className="p-4 text-center text-slate-400 text-sm italic">
-                      No classes scheduled for {day}
+                      {t('noClasses')} {day}
                     </div>
                   )}
                 </div>
@@ -179,7 +181,7 @@ export const ScheduleEditor: React.FC = () => {
                       onClick={() => handleAddClass(day)}
                       className="w-full py-2 flex items-center justify-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors border border-dashed border-emerald-200"
                     >
-                      + Add Class to {day}
+                      + {t('addClassTo')} {day}
                     </button>
                   </div>
                 )}
@@ -193,7 +195,7 @@ export const ScheduleEditor: React.FC = () => {
       <div className="grid gap-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-mono text-emerald-600 uppercase tracking-wider flex items-center gap-2">
-            <Calendar className="w-4 h-4" /> Upcoming Exams
+            <Calendar className="w-4 h-4" /> {t('upcomingExams')}
           </h3>
           <div className="flex items-center gap-2">
             <input
@@ -201,7 +203,7 @@ export const ScheduleEditor: React.FC = () => {
               value={filterStartDate}
               onChange={(e) => setFilterStartDate(e.target.value)}
               className="bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-600 focus:outline-none focus:border-emerald-500"
-              placeholder="Start Date"
+              placeholder={t('startDate')}
             />
             <span className="text-slate-400 text-xs">-</span>
             <input
@@ -209,13 +211,13 @@ export const ScheduleEditor: React.FC = () => {
               value={filterEndDate}
               onChange={(e) => setFilterEndDate(e.target.value)}
               className="bg-white border border-slate-200 rounded px-2 py-1 text-xs text-slate-600 focus:outline-none focus:border-emerald-500"
-              placeholder="End Date"
+              placeholder={t('endDate')}
             />
             {(filterStartDate || filterEndDate) && (
               <button
                 onClick={() => { setFilterStartDate(''); setFilterEndDate(''); }}
                 className="text-slate-400 hover:text-slate-600"
-                title="Clear Filter"
+                title={t('clearFilter')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -224,10 +226,10 @@ export const ScheduleEditor: React.FC = () => {
         </div>
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-slate-200 text-xs font-medium text-slate-400 uppercase tracking-wider">
-            <div className="col-span-3">Date</div>
-            <div className="col-span-3">Subject</div>
-            <div className={isEditing ? "col-span-5" : "col-span-6"}>Topics</div>
-            {isEditing && <div className="col-span-1 text-center">Action</div>}
+            <div className="col-span-3">{t('date')}</div>
+            <div className="col-span-3">{t('subject')}</div>
+            <div className={isEditing ? "col-span-5" : "col-span-6"}>{t('topics')}</div>
+            {isEditing && <div className="col-span-1 text-center">{t('action')}</div>}
           </div>
           <div className="divide-y divide-slate-100">
             {exams
@@ -307,7 +309,7 @@ export const ScheduleEditor: React.FC = () => {
                 onClick={handleAddExam}
                 className="w-full py-2 flex items-center justify-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors border border-dashed border-emerald-200"
               >
-                + Add New Exam
+                + {t('addNewExam')}
               </button>
             </div>
           )}
@@ -321,7 +323,7 @@ export const ScheduleEditor: React.FC = () => {
             className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20"
           >
             <Save className="w-5 h-5" />
-            Save All Changes
+            {t('saveChanges')}
           </button>
         </div>
       )}
@@ -391,7 +393,7 @@ export const ScheduleEditor: React.FC = () => {
                 onClick={() => setEditingClass(null)}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={() => {
@@ -401,7 +403,7 @@ export const ScheduleEditor: React.FC = () => {
                 }}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-colors"
               >
-                Save Details
+                {t('saveDetails')}
               </button>
             </div>
           </div>
@@ -449,7 +451,7 @@ export const ScheduleEditor: React.FC = () => {
                 onClick={() => setEditingExam(null)}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={() => {
@@ -459,7 +461,7 @@ export const ScheduleEditor: React.FC = () => {
                 }}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-colors"
               >
-                Save Details
+                {t('saveDetails')}
               </button>
             </div>
           </div>
@@ -479,7 +481,7 @@ export const ScheduleEditor: React.FC = () => {
                 onClick={cancelDelete}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={confirmDelete}

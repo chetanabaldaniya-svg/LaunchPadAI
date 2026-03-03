@@ -14,6 +14,10 @@ class SchoolDataService {
         if (!this.data.profile) {
             this.data.profile = { ...INITIAL_SCHOOL_DATA.profile };
         }
+        // Ensure progress exists if loading from old data
+        if (!this.data.progress) {
+            this.data.progress = [...(INITIAL_SCHOOL_DATA.progress || [])];
+        }
       } catch (e) {
         console.error('Failed to parse stored school data', e);
         this.data = { ...INITIAL_SCHOOL_DATA };
@@ -39,6 +43,10 @@ class SchoolDataService {
     return this.data.profile;
   }
 
+  getProgress(): any[] {
+    return this.data.progress || [];
+  }
+
   getData(category: SchoolDataCategory): any {
     if (category === 'timetable') {
       return this.getTimetable();
@@ -46,6 +54,8 @@ class SchoolDataService {
       return this.getExams();
     } else if (category === 'profile') {
       return this.getProfile();
+    } else if (category === 'progress') {
+      return this.getProgress();
     }
     return null;
   }
@@ -62,6 +72,11 @@ class SchoolDataService {
 
   updateProfile(profile: StudentProfile) {
     this.data.profile = profile;
+    this.save();
+  }
+
+  updateProgress(progress: any[]) {
+    this.data.progress = progress;
     this.save();
   }
 

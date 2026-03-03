@@ -2,9 +2,11 @@ import React from 'react';
 import { useStudySession } from '../context/StudyContext';
 import { motion } from 'motion/react';
 import { Timer, Play, Pause, Square, Zap } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const StudyTimer: React.FC = () => {
   const { timeLeft, isActive, totalTime, topic, startSprint, stopTimer, pauseTimer, resumeTimer } = useStudySession();
+  const { t } = useTranslation();
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -19,16 +21,16 @@ export const StudyTimer: React.FC = () => {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-4 text-slate-500">
           <Timer className="w-5 h-5" />
-          <span className="text-sm font-medium uppercase tracking-wider">Study Sprint</span>
+          <span className="text-sm font-medium uppercase tracking-wider">{t('studySprint')}</span>
         </div>
         <div className="text-center py-4">
-          <p className="text-slate-400 text-sm mb-4">Ready to focus?</p>
+          <p className="text-slate-400 text-sm mb-4">{t('readyToFocus')}</p>
           <button 
             onClick={() => startSprint(25)}
             className="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-2 mx-auto"
           >
             <Zap className="w-4 h-4" />
-            Start 25m Sprint
+            {t('startSprint')}
           </button>
         </div>
       </div>
@@ -51,10 +53,10 @@ export const StudyTimer: React.FC = () => {
         <div>
           <h3 className="text-white font-medium flex items-center gap-2">
             <Zap className="w-4 h-4 fill-emerald-400 text-emerald-400" />
-            {topic || 'Focus Session'}
+            {topic || t('focusSession')}
           </h3>
           <p className="text-xs text-emerald-200/60 uppercase tracking-wider font-mono mt-1">
-            {isActive ? 'Sprint Active' : 'Paused'}
+            {isActive ? t('sprintActive') : t('paused')}
           </p>
         </div>
         <div className="flex gap-2">

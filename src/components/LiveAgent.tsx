@@ -3,10 +3,12 @@ import { useLiveAgent } from '../hooks/useLiveAgent';
 import { AudioVisualizer } from './AudioVisualizer';
 import { Mic, MicOff, Radio, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const LiveAgent: React.FC = () => {
   const { connect, disconnect, isConnected, isListening, isSpeaking, error } = useLiveAgent();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Check microphone permission
@@ -27,7 +29,7 @@ export const LiveAgent: React.FC = () => {
     return (
       <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-200 flex items-center gap-2">
         <AlertCircle className="w-5 h-5" />
-        <span>Microphone access is required for LaunchPad AI.</span>
+        <span>{t('micAccessRequired')}</span>
       </div>
     );
   }
@@ -37,7 +39,7 @@ export const LiveAgent: React.FC = () => {
       {/* Status Indicator */}
       <div className="flex items-center gap-2 text-sm font-medium tracking-wider uppercase text-slate-500">
         <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-600 shadow-[0_0_10px_#059669]' : 'bg-slate-300'}`} />
-        {isConnected ? (isSpeaking ? 'Agent Speaking' : 'Listening...') : 'Offline'}
+        {isConnected ? (isSpeaking ? t('agentSpeaking') : t('listening')) : t('offline')}
       </div>
 
       {/* Visualizer */}
@@ -79,8 +81,8 @@ export const LiveAgent: React.FC = () => {
 
       <p className="text-xs text-center text-slate-400 max-w-[200px]">
         {isConnected 
-          ? "Tap to disconnect session" 
-          : "Tap to launch live session"}
+          ? t('tapToDisconnect') 
+          : t('tapToLaunch')}
       </p>
     </div>
   );

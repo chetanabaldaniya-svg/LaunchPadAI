@@ -23,10 +23,20 @@ export interface StudentProfile {
   goals: string;
 }
 
+export interface SubjectProgress {
+  id: string;
+  subjectName: string;
+  currentGrade: number;
+  targetGrade: number;
+  studyHours: number;
+  lastUpdated: string;
+}
+
 export interface SchoolData {
   timetable: SchoolClass[];
   exams: Exam[];
   profile: StudentProfile;
+  progress: SubjectProgress[];
 }
 
-export type SchoolDataCategory = 'timetable' | 'exams' | 'profile';
+export type SchoolDataCategory = 'timetable' | 'exams' | 'profile' | 'progress';

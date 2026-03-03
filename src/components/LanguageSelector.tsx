@@ -7,6 +7,8 @@ const LANGUAGES = [
   { code: 'en', name: 'English', native: 'English' },
   { code: 'hi', name: 'Hindi', native: 'हिन्दी' },
   { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
+  { code: 'es', name: 'Spanish', native: 'Español' },
+  { code: 'fr', name: 'French', native: 'Français' },
 ];
 
 export const LanguageSelector: React.FC = () => {

@@ -45,16 +45,35 @@ export function useLiveAgent() {
         }
       });
 
+      const now = new Date();
+      const timeInstruction = `
+# CURRENT CONTEXT
+- Current Date: ${now.toLocaleDateString()}
+- Current Day: ${now.toLocaleDateString('en-US', { weekday: 'long' })}
+- Current Time: ${now.toLocaleTimeString()}
+`;
+
       const languageInstruction = `
-# LANGUAGE SETTING
-- You must speak and understand ONLY in ${language}.
-- If the user speaks in another language, politely remind them (in ${language}) that you are currently set to speak ${language}.
+# LANGUAGE ADAPTATION
+- The user's preferred UI language is set to "${language}".
+- **CRITICAL:** You must detect the language the user is speaking and respond in that EXACT same language.
+- If they speak English, reply in English. If they speak Hindi, reply in Hindi.
+- If they mix languages (e.g., Hinglish), reply in a similar natural mix.
+- Do not strictly adhere to "${language}" if the user speaks something else. Adapt instantly.
+`;
+
+      const speedInstruction = `
+# SPEECH PACE & CLARITY
+- **CRITICAL:** Speak significantly SLOWER than your default pace.
+- The student is packing their bag while listening.
+- Pause for 2-3 seconds after listing each item (e.g., "Math textbook... [pause]... Calculator... [pause]").
+- Use a calm, patient, and deliberate pacing.
 `;
 
       const session = await ai.live.connect({
         model: "gemini-2.5-flash-native-audio-preview-09-2025",
         config: {
-          systemInstruction: languageInstruction + SYSTEM_INSTRUCTION,
+          systemInstruction: timeInstruction + languageInstruction + speedInstruction + SYSTEM_INSTRUCTION,
           responseModalities: [Modality.AUDIO],
           tools: [{
             functionDeclarations: [
