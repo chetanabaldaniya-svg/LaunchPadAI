@@ -25,7 +25,7 @@ export function useLiveAgent() {
     studyControlsRef.current = { startSprint, stopTimer, pauseTimer, resumeTimer, timeLeft, isActive, topic };
   }, [startSprint, stopTimer, pauseTimer, resumeTimer, timeLeft, isActive, topic]);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (initialSpeed = 50) => {
     try {
       setError(null);
       const apiKey = process.env.GEMINI_API_KEY;
@@ -62,12 +62,19 @@ export function useLiveAgent() {
 - Do not strictly adhere to "${language}" if the user speaks something else. Adapt instantly.
 `;
 
+      // Determine speed instruction based on initialSpeed (0-100)
+      let paceDescription = "normal and conversational";
+      if (initialSpeed <= 33) {
+        paceDescription = "significantly SLOWER than default. Pause for 2-3 seconds after items. Be very deliberate.";
+      } else if (initialSpeed >= 67) {
+        paceDescription = "fast, energetic, and snappy. Keep momentum high.";
+      }
+
       const speedInstruction = `
 # SPEECH PACE & CLARITY
-- **CRITICAL:** Speak significantly SLOWER than your default pace.
-- The student is packing their bag while listening.
-- Pause for 2-3 seconds after listing each item (e.g., "Math textbook... [pause]... Calculator... [pause]").
-- Use a calm, patient, and deliberate pacing.
+- **CRITICAL:** The user has set the speaking speed to: ${initialSpeed}/100.
+- You MUST speak in a manner that is ${paceDescription}.
+- If the speed is low (<40), ensure you pause frequently to let the student process tasks (like packing a bag).
 `;
 
       const session = await ai.live.connect({

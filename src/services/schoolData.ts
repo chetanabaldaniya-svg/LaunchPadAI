@@ -147,6 +147,61 @@ class SchoolDataService {
     this.data.exams = this.data.exams.filter(e => e.id !== id);
     this.save();
   }
+
+  async syncCalendar(token: string) {
+    try {
+      const response = await fetch('/api/calendar/events', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch calendar events');
+      
+      const { events } = await response.json();
+      
+      // Process events
+      let newExamsCount = 0;
+      let newClassesCount = 0;
+
+      events.forEach((event: any) => {
+        const summary = event.summary || 'Untitled';
+        const start = new Date(event.start);
+        const dateStr = start.toISOString().split('T')[0];
+        const dayName = start.toLocaleDateString('en-US', { weekday: 'long' });
+        const timeStr = start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        
+        // Check if it's an exam
+        if (summary.match(/exam|test|quiz|midterm|final/i)) {
+          // Check if already exists
+          const exists = this.data.exams.some(e => 
+            e.subject === summary && e.date === dateStr
+          );
+          
+          if (!exists) {
+            this.addExam(summary, dateStr, event.description || 'Imported from Calendar');
+            newExamsCount++;
+          }
+        } else {
+          // Assume it's a class
+          // Check if already exists in timetable for this day/time
+          const exists = this.data.timetable.some(c => 
+            c.day === dayName && c.time === timeStr && c.name === summary
+          );
+          
+          if (!exists) {
+            this.addSchoolClass(summary, timeStr, dayName, event.description || '');
+            newClassesCount++;
+          }
+        }
+      });
+      
+      return { newExamsCount, newClassesCount };
+    } catch (error) {
+      console.error('Sync error:', error);
+      throw error;
+    }
+  }
 }
 
 export const schoolDataService = new SchoolDataService();

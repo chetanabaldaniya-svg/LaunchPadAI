@@ -63,7 +63,8 @@ export const translations = {
     actions: "Actions",
     stopRecording: "Stop Recording",
     recordInput: "Record Input",
-    speechRecognitionError: "Your browser doesn't support speech recognition."
+    speechRecognitionError: "Your browser doesn't support speech recognition.",
+    speakingSpeed: "Speaking Speed"
   },
   Hindi: {
     appTitle: "लॉन्चपैड एआई",
@@ -129,7 +130,8 @@ export const translations = {
     actions: "कार्रवाइयां",
     stopRecording: "रिकॉर्डिंग रोकें",
     recordInput: "इनपुट रिकॉर्ड करें",
-    speechRecognitionError: "आपका ब्राउज़र भाषण पहचान का समर्थन नहीं करता है।"
+    speechRecognitionError: "आपका ब्राउज़र भाषण पहचान का समर्थन नहीं करता है।",
+    speakingSpeed: "बोलने की गति"
   },
   Gujarati: {
     appTitle: "લોન્ચપેડ એઆઈ",
@@ -195,7 +197,8 @@ export const translations = {
     actions: "ક્રિયાઓ",
     stopRecording: "રેકોર્ડિંગ બંધ કરો",
     recordInput: "ઇનપુટ રેકોર્ડ કરો",
-    speechRecognitionError: "તમારું બ્રાઉઝર સ્પીચ રેકગ્નિશનને સપોર્ટ કરતું નથી."
+    speechRecognitionError: "તમારું બ્રાઉઝર સ્પીચ રેકગ્નિશનને સપોર્ટ કરતું નથી.",
+    speakingSpeed: "બોલવાની ઝડપ"
   },
   Spanish: {
     appTitle: "LaunchPad AI",
@@ -261,7 +264,8 @@ export const translations = {
     actions: "Acciones",
     stopRecording: "Detener Grabación",
     recordInput: "Grabar Entrada",
-    speechRecognitionError: "Tu navegador no soporta el reconocimiento de voz."
+    speechRecognitionError: "Tu navegador no soporta el reconocimiento de voz.",
+    speakingSpeed: "Velocidad de Habla"
   },
   French: {
     appTitle: "LaunchPad AI",
@@ -327,7 +331,8 @@ export const translations = {
     actions: "Actions",
     stopRecording: "Arrêter l'Enregistrement",
     recordInput: "Enregistrer l'Entrée",
-    speechRecognitionError: "Votre navigateur ne prend pas en charge la reconnaissance vocale."
+    speechRecognitionError: "Votre navigateur ne prend pas en charge la reconnaissance vocale.",
+    speakingSpeed: "Vitesse de Parole"
   }
 };
 

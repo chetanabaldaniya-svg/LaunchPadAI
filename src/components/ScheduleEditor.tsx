@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { schoolDataService } from '../services/schoolData';
 import { SchoolClass, Exam } from '../types';
-import { Edit2, Save, X, Calendar, Clock, BookOpen, Info } from 'lucide-react';
+import { Edit2, Save, X, Calendar, Clock, BookOpen, Info, RefreshCw } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const ScheduleEditor: React.FC = () => {
   const [timetable, setTimetable] = useState<SchoolClass[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [deletingItem, setDeletingItem] = useState<{ type: 'class' | 'exam', id: string } | null>(null);
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
@@ -18,7 +19,53 @@ export const ScheduleEditor: React.FC = () => {
   useEffect(() => {
     setTimetable(schoolDataService.getTimetable());
     setExams(schoolDataService.getExams());
+
+    // Listen for OAuth success
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data?.type === 'OAUTH_SUCCESS' && event.data.tokens) {
+        setIsSyncing(true);
+        try {
+          const { access_token } = event.data.tokens;
+          const result = await schoolDataService.syncCalendar(access_token);
+          
+          // Refresh data
+          setTimetable(schoolDataService.getTimetable());
+          setExams(schoolDataService.getExams());
+          
+          alert(`Synced! Added ${result.newClassesCount} classes and ${result.newExamsCount} exams.`);
+        } catch (error) {
+          console.error('Sync failed', error);
+          alert('Failed to sync calendar.');
+        } finally {
+          setIsSyncing(false);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
+
+  const handleConnectCalendar = async () => {
+    try {
+      const response = await fetch('/api/auth/google/url');
+      const { url } = await response.json();
+      
+      const width = 500;
+      const height = 600;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      
+      window.open(
+        url,
+        'Google Calendar Auth',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+    } catch (error) {
+      console.error('Failed to get auth URL', error);
+      alert('Failed to initiate calendar connection.');
+    }
+  };
 
   const handleSave = () => {
     schoolDataService.updateTimetable(timetable);
@@ -69,8 +116,17 @@ export const ScheduleEditor: React.FC = () => {
         <h2 className="text-2xl font-light tracking-tight text-slate-900">
           {t('missionDataSchedule')}
         </h2>
-        <button
-          onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleConnectCalendar}
+            disabled={isSyncing}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing...' : 'Sync Calendar'}
+          </button>
+          <button
+            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
           className={`
             flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors
             ${isEditing 
@@ -81,6 +137,7 @@ export const ScheduleEditor: React.FC = () => {
           {isEditing ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
           {isEditing ? t('saveChanges') : t('editData')}
         </button>
+        </div>
       </div>
 
       {/* Timetable Grid */}

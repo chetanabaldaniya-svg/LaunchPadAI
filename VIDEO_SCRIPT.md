@@ -31,8 +31,10 @@
 **Audio (AI Voice):**
 *"Good morning! You have Chemistry Lab at 9:30. Don't forget your lab coat... [pause]... and your safety goggles."*
 
+**[Visual: Close-up of the new 'Speaking Speed' slider. The user drags it from 'Normal' to 'Slow/Deliberate'.]**
+
 **Narrator:**
-"Notice the pacing? We’ve engineered the agent to speak slowly and clearly during routines like bag packing, giving students time to actually *do* the task without feeling rushed."
+"Notice the pacing? We’ve added a **Speaking Speed Slider**, putting the student in control. Whether they need a slow, deliberate pace for packing their bag or a high-energy sprint mode, the agent adapts its system instructions instantly."
 
 **[Visual: The 'Progress Dashboard' screen. Mouse hovers over the 'Math' row, showing the subtle scale animation and shadow effect.]**
 
