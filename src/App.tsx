@@ -4,19 +4,68 @@ import { ScheduleEditor } from './components/ScheduleEditor';
 import { StudyTimer } from './components/StudyTimer';
 import { StudentProfile } from './components/StudentProfile';
 import { ProgressDashboard } from './components/ProgressDashboard';
+import { MorningCheck } from './components/MorningCheck';
 import { StudyProvider } from './context/StudyContext';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Clock } from './components/Clock';
 import { LanguageSelector } from './components/LanguageSelector';
-import { Rocket, GraduationCap, Settings, BookOpen, LayoutDashboard, Calendar } from 'lucide-react';
+import { Rocket, GraduationCap, Settings, BookOpen, LayoutDashboard, Calendar, User, Mic, Menu, X } from 'lucide-react';
 import { useTranslation } from './hooks/useTranslation';
 
+type View = 'coach' | 'schedule' | 'progress' | 'profile' | 'morning-check' | 'study-sprint';
+
 const AppContent = () => {
-  const [activeTab, setActiveTab] = useState<'schedule' | 'progress'>('schedule');
+  const [activeView, setActiveView] = useState<View>('coach');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { t } = useTranslation();
 
+  const menuItems = [
+    { id: 'coach', label: t('voiceCommandCenter'), icon: Mic },
+    { id: 'morning-check', label: t('morningCheck'), icon: GraduationCap },
+    { id: 'study-sprint', label: t('studySprint'), icon: BookOpen },
+    { id: 'schedule', label: t('scheduleExams'), icon: Calendar },
+    { id: 'progress', label: t('progressReport'), icon: LayoutDashboard },
+    { id: 'profile', label: 'Profile', icon: User },
+  ];
+
+  const renderContent = () => {
+    switch (activeView) {
+      case 'coach':
+        return (
+          <div className="min-h-full flex flex-col items-center justify-center p-4 md:p-8">
+             <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 opacity-50" />
+                  <div className="mb-4 md:mb-8 text-center">
+                    <h2 className="text-lg md:text-xl font-medium text-slate-900 mb-1 md:mb-2">{t('voiceCommandCenter')}</h2>
+                    <p className="text-xs md:text-sm text-slate-500">"{t('voicePrompt')}"</p>
+                  </div>
+                  <LiveAgent />
+             </div>
+          </div>
+        );
+      case 'morning-check':
+        return <MorningCheck />;
+      case 'study-sprint':
+        return (
+          <div className="h-full flex items-center justify-center p-2 md:p-4">
+            <div className="w-full max-w-md">
+              <StudyTimer />
+            </div>
+          </div>
+        );
+      case 'schedule':
+        return <ScheduleEditor />;
+      case 'progress':
+        return <ProgressDashboard />;
+      case 'profile':
+        return <StudentProfile />;
+      default:
+        return <LiveAgent />;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-500/30 selection:text-emerald-900 overflow-x-hidden">
+    <div className="h-[100dvh] w-screen bg-slate-50 text-slate-900 font-sans selection:bg-emerald-500/30 selection:text-emerald-900 overflow-hidden flex">
       {/* Background Elements */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-emerald-100/40 rounded-full blur-[120px]" />
@@ -24,134 +73,119 @@ const AppContent = () => {
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-100 contrast-150 mix-blend-overlay" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 flex flex-col gap-8 md:gap-16">
-        {/* Header */}
-        <motion.header 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="flex flex-col md:flex-row items-center justify-between border-b border-slate-100 pb-6 md:pb-8 gap-6 md:gap-0"
-        >
-          <div className="flex items-center gap-4 w-full md:w-auto justify-center md:justify-start">
-            <div className="p-3 bg-emerald-600 rounded-xl shadow-lg shadow-emerald-600/20">
-              <Rocket className="w-6 h-6 text-white" />
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.aside 
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col
+          transform transition-transform duration-300 ease-in-out
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-600 rounded-lg shadow-lg shadow-emerald-600/20">
+              <Rocket className="w-5 h-5 text-white" />
             </div>
-            <div className="text-center md:text-left">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                {t('appTitle')}
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">
+                LaunchPad
               </h1>
-              <p className="text-sm text-slate-500 font-medium tracking-wide uppercase">
-                {t('appSubtitle')}
-              </p>
+              <span className="text-[10px] text-slate-500 font-medium tracking-wide uppercase">AI Coach</span>
             </div>
           </div>
-          
-          <div className="flex flex-wrap items-center justify-center gap-4 w-full md:w-auto">
-            <Clock />
+          <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-slate-400">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveView(item.id as View);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`
+                  w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                  ${isActive 
+                    ? 'bg-emerald-50 text-emerald-700 shadow-sm ring-1 ring-emerald-100' 
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
+                `}
+              >
+                <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-slate-400'}`} />
+                {item.label}
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeIndicator"
+                    className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-500"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-slate-100 space-y-4">
+          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+             <Clock />
+          </div>
+          <div className="flex items-center justify-between gap-2">
             <LanguageSelector />
-            <div className="hidden md:block h-8 w-[1px] bg-slate-200" />
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-slate-200 shadow-sm">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-medium text-slate-600">{t('systemOnline')}</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded-full border border-emerald-100">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-medium text-emerald-700">Online</span>
             </div>
           </div>
-        </motion.header>
+        </div>
+      </motion.aside>
 
-        {/* Main Content Grid */}
-        <main className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          
-          {/* Left Column: Live Agent Interface */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="lg:col-span-5 flex flex-col gap-6 md:gap-8 order-1"
-          >
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500/0 via-emerald-500/50 to-emerald-500/0 opacity-50" />
-              
-              <div className="mb-8 text-center">
-                <h2 className="text-lg font-medium text-slate-900 mb-2">{t('voiceCommandCenter')}</h2>
-                <p className="text-sm text-slate-500">
-                  "{t('voicePrompt')}"
-                </p>
-              </div>
-
-              <LiveAgent />
-              
-              <div className="mt-8 pt-8 border-t border-slate-100 grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-emerald-50 hover:border-emerald-100 transition-colors cursor-pointer group">
-                  <div className="flex items-center gap-2 mb-2 text-emerald-600">
-                    <GraduationCap className="w-4 h-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">{t('morningCheck')}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">
-                    {t('morningCheckDesc')}
-                  </p>
-                </div>
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-emerald-50 hover:border-emerald-100 transition-colors cursor-pointer group">
-                  <div className="flex items-center gap-2 mb-2 text-green-600">
-                    <BookOpen className="w-4 h-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">{t('studySprint')}</span>
-                  </div>
-                  <p className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">
-                    {t('studySprintDesc')}
-                  </p>
-                </div>
-              </div>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0 relative z-10 h-full">
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between p-4 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+             <div className="p-2 bg-emerald-600 rounded-lg">
+              <Rocket className="w-4 h-4 text-white" />
             </div>
+            <span className="font-bold text-slate-900">LaunchPad AI</span>
+          </div>
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-slate-600">
+            <Menu className="w-6 h-6" />
+          </button>
+        </div>
 
-            {/* Study Timer Component */}
-            <StudyTimer />
-
-            {/* Student Profile */}
-            <StudentProfile />
-
-          </motion.div>
-
-          {/* Right Column: Data Editor */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="lg:col-span-7 space-y-6 order-2"
-          >
-            {/* Navigation Tabs */}
-            <div className="flex gap-2 p-1 bg-slate-100/50 rounded-xl w-full md:w-fit overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('schedule')}
-                className={`
-                  flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
-                  ${activeTab === 'schedule' 
-                    ? 'bg-white text-emerald-600 shadow-sm' 
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}
-                `}
-              >
-                <Calendar className="w-4 h-4" />
-                {t('scheduleExams')}
-              </button>
-              <button
-                onClick={() => setActiveTab('progress')}
-                className={`
-                  flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
-                  ${activeTab === 'progress' 
-                    ? 'bg-white text-emerald-600 shadow-sm' 
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-white/50'}
-                `}
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                {t('progressReport')}
-              </button>
-            </div>
-
-            {/* Content Area */}
-            <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-1">
-              {activeTab === 'schedule' ? <ScheduleEditor /> : <ProgressDashboard />}
-            </div>
-          </motion.div>
-
-        </main>
-      </div>
+        {/* Content View */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth">
+          <div className="max-w-5xl mx-auto h-full">
+            <motion.div
+              key={activeView}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              {renderContent()}
+            </motion.div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

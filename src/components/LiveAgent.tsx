@@ -36,9 +36,9 @@ export const LiveAgent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
+    <div className="flex flex-col items-center gap-3 md:gap-6 w-full max-w-md mx-auto">
       {/* Status Indicator */}
-      <div className="flex items-center gap-2 text-sm font-medium tracking-wider uppercase text-slate-500">
+      <div className="flex items-center gap-2 text-xs md:text-sm font-medium tracking-wider uppercase text-slate-500">
         <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-600 shadow-[0_0_10px_#059669]' : 'bg-slate-300'}`} />
         {isConnected ? (isSpeaking ? t('agentSpeaking') : t('listening')) : t('offline')}
       </div>
@@ -55,7 +55,7 @@ export const LiveAgent: React.FC = () => {
         whileTap={{ scale: 0.95 }}
         onClick={handleToggleConnection}
         className={`
-          relative w-20 h-20 rounded-full flex items-center justify-center
+          relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center
           transition-all duration-300 shadow-xl
           ${isConnected 
             ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' 
@@ -63,9 +63,9 @@ export const LiveAgent: React.FC = () => {
         `}
       >
         {isConnected ? (
-          <MicOff className="w-8 h-8" />
+          <MicOff className="w-6 h-6 md:w-8 md:h-8" />
         ) : (
-          <Mic className="w-8 h-8" />
+          <Mic className="w-6 h-6 md:w-8 md:h-8" />
         )}
         
         {/* Ripple Effect when connecting */}
@@ -76,8 +76,8 @@ export const LiveAgent: React.FC = () => {
 
       {/* Speed Slider */}
       {!isConnected && (
-        <div className="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
-          <div className="flex items-center justify-between text-xs font-medium text-slate-500 uppercase tracking-wider">
+        <div className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-1 md:gap-2">
+          <div className="flex items-center justify-between text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-wider">
             <div className="flex items-center gap-1">
               <Gauge className="w-3 h-3" />
               {t('speakingSpeed')}
@@ -90,7 +90,7 @@ export const LiveAgent: React.FC = () => {
             max="100"
             value={speechRate}
             onChange={(e) => setSpeechRate(Number(e.target.value))}
-            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+            className="w-full h-1.5 md:h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
           />
           <div className="flex justify-between text-[10px] text-slate-400 font-medium uppercase tracking-wider">
             <span>Deliberate</span>

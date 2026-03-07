@@ -90,7 +90,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isListening, i
       ref={canvasRef}
       width={300}
       height={100}
-      className="w-full h-24 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10"
+      className="w-full h-16 md:h-24 rounded-lg bg-black/20 backdrop-blur-sm border border-white/10"
     />
   );
 };
