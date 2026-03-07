@@ -54,7 +54,8 @@ export const INITIAL_SCHOOL_DATA: any = {
     { id: '3', subjectName: 'History', currentGrade: 90, targetGrade: 90, studyHours: 5, lastUpdated: '2026-03-01' },
     { id: '4', subjectName: 'English', currentGrade: 88, targetGrade: 92, studyHours: 6, lastUpdated: '2026-03-01' },
     { id: '5', subjectName: 'Physics', currentGrade: 78, targetGrade: 85, studyHours: 15, lastUpdated: '2026-03-01' }
-  ]
+  ],
+  documents: []
 };
 
 export const SYSTEM_INSTRUCTION = `

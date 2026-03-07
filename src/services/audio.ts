@@ -71,10 +71,19 @@ export class AudioRecorder {
     this.onDataAvailable = onDataAvailable;
   }
 
+  getStream(): MediaStream | null {
+    return this.stream;
+  }
+
   async start() {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.audioContext = new AudioContext({ sampleRate: 16000 });
+      
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume();
+      }
+
       this.source = this.audioContext.createMediaStreamSource(this.stream);
       this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
 

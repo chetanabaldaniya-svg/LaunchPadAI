@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const LiveAgent: React.FC = () => {
-  const { connect, disconnect, isConnected, isListening, isSpeaking, error } = useLiveAgent();
+  const { connect, disconnect, isConnected, isListening, isSpeaking, error, audioStream } = useLiveAgent();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [speechRate, setSpeechRate] = useState(25); // Default to slow/deliberate as requested
   const { t } = useTranslation();
@@ -46,7 +46,7 @@ export const LiveAgent: React.FC = () => {
       {/* Visualizer */}
       <div className="w-full relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-green-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
-        <AudioVisualizer isListening={isListening} isSpeaking={isSpeaking} />
+        <AudioVisualizer isListening={isListening} isSpeaking={isSpeaking} audioStream={audioStream || undefined} />
       </div>
 
       {/* Control Button */}

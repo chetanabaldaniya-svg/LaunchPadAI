@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { schoolDataService } from '../services/schoolData';
 import { SchoolClass, Exam } from '../types';
-import { Edit2, Save, X, Calendar, Clock, BookOpen, Info, RefreshCw } from 'lucide-react';
+import { Edit2, Save, X, Calendar, Clock, BookOpen, Info, RefreshCw, FileText, Trash2, Download } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import { ExamUploader } from './ExamUploader';
+import { StoredDocument } from '../types';
 
 export const ScheduleEditor: React.FC = () => {
   const [timetable, setTimetable] = useState<SchoolClass[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
+  const [documents, setDocuments] = useState<StoredDocument[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [deletingItem, setDeletingItem] = useState<{ type: 'class' | 'exam', id: string } | null>(null);
+  const [deletingItem, setDeletingItem] = useState<{ type: 'class' | 'exam' | 'document', id: string } | null>(null);
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
   const [filterStartDate, setFilterStartDate] = useState('');
@@ -19,6 +22,8 @@ export const ScheduleEditor: React.FC = () => {
   useEffect(() => {
     setTimetable(schoolDataService.getTimetable());
     setExams(schoolDataService.getExams());
+    setDocuments(schoolDataService.getDocuments());
+    schoolDataService.cleanupExpiredDocuments();
 
     // Listen for OAuth success
     const handleMessage = async (event: MessageEvent) => {
@@ -81,21 +86,37 @@ export const ScheduleEditor: React.FC = () => {
     setDeletingItem({ type: 'exam', id });
   };
 
+  const handleDeleteDocument = (id: string) => {
+    setDeletingItem({ type: 'document', id });
+  };
+
   const confirmDelete = () => {
     if (!deletingItem) return;
     
     if (deletingItem.type === 'class') {
       schoolDataService.deleteSchoolClass(deletingItem.id);
       setTimetable(schoolDataService.getTimetable());
-    } else {
+    } else if (deletingItem.type === 'exam') {
       schoolDataService.deleteExam(deletingItem.id);
       setExams(schoolDataService.getExams());
+    } else if (deletingItem.type === 'document') {
+      schoolDataService.deleteDocument(deletingItem.id);
+      setDocuments(schoolDataService.getDocuments());
     }
     setDeletingItem(null);
   };
 
   const cancelDelete = () => {
     setDeletingItem(null);
+  };
+
+  const handleDownloadDocument = (doc: StoredDocument) => {
+    const link = document.createElement('a');
+    link.href = doc.data;
+    link.download = doc.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleAddClass = (day: string) => {
@@ -281,11 +302,69 @@ export const ScheduleEditor: React.FC = () => {
             )}
           </div>
         </div>
+        
+        {/* PDF Uploader */}
+        {isEditing && (
+            <div className="mb-4">
+                <ExamUploader onUploadComplete={() => {
+                  setExams(schoolDataService.getExams());
+                  setDocuments(schoolDataService.getDocuments());
+                }} />
+            </div>
+        )}
+
+        {/* Stored Documents */}
+        {documents.length > 0 && (
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm mb-4">
+            <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4" /> {t('storedDocuments') || 'Stored Documents'}
+              </h3>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {documents.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between p-4 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-50 text-red-500 rounded-lg">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-slate-900">{doc.name}</div>
+                      <div className="text-xs text-slate-500">
+                        Uploaded: {new Date(doc.uploadDate).toLocaleDateString()} • Expires: {new Date(doc.expiryDate).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleDownloadDocument(doc)}
+                      className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                      title="Download PDF"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                    {isEditing && (
+                      <button
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete Document"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-slate-200 text-xs font-medium text-slate-400 uppercase tracking-wider">
-            <div className="col-span-3">{t('date')}</div>
+            <div className="col-span-2">{t('date')}</div>
             <div className="col-span-3">{t('subject')}</div>
-            <div className={isEditing ? "col-span-5" : "col-span-6"}>{t('topics')}</div>
+            <div className="col-span-4">{t('topics')}</div>
+            <div className={isEditing ? "col-span-2" : "col-span-3"}>{t('reminder')}</div>
             {isEditing && <div className="col-span-1 text-center">{t('action')}</div>}
           </div>
           <div className="divide-y divide-slate-100">
@@ -302,7 +381,7 @@ export const ScheduleEditor: React.FC = () => {
               })
               .map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-4 p-4 text-sm text-slate-700 hover:bg-slate-50 transition-colors items-center">
-                <div className="col-span-3 font-mono text-slate-500">
+                <div className="col-span-2 font-mono text-slate-500">
                   {isEditing ? (
                     <input 
                       type="date"
@@ -327,7 +406,7 @@ export const ScheduleEditor: React.FC = () => {
                     />
                   ) : item.subject}
                 </div>
-                <div className={`${isEditing ? "col-span-5" : "col-span-6"} text-slate-500`}>
+                <div className="col-span-4 text-slate-500">
                   {isEditing ? (
                     <input 
                       value={item.topics} 
@@ -338,6 +417,21 @@ export const ScheduleEditor: React.FC = () => {
                       className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     />
                   ) : item.topics}
+                </div>
+                <div className={isEditing ? "col-span-2" : "col-span-3"}>
+                  {isEditing ? (
+                    <input 
+                      value={item.reminder || ''} 
+                      onChange={(e) => {
+                        const newExams = exams.map(ex => ex.id === item.id ? { ...ex, reminder: e.target.value } : ex);
+                        setExams(newExams);
+                      }}
+                      placeholder="e.g. 2 days before"
+                      className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-xs"
+                    />
+                  ) : (
+                    <span className="text-slate-400 text-xs italic">{item.reminder || 'No reminder'}</span>
+                  )}
                 </div>
                 {isEditing && (
                   <div className="col-span-1 flex justify-center gap-1">
@@ -499,6 +593,17 @@ export const ScheduleEditor: React.FC = () => {
                   onChange={(e) => setEditingExam({ ...editingExam, prerequisites: e.target.value })}
                   className="w-full h-24 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
                   placeholder="What do you need to know before starting?"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Reminder / Instructions</label>
+                <input
+                  type="text"
+                  value={editingExam.reminder || ''}
+                  onChange={(e) => setEditingExam({ ...editingExam, reminder: e.target.value })}
+                  className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  placeholder="e.g. Bring calculator, Open book"
                 />
               </div>
             </div>

@@ -10,6 +10,7 @@ export function useLiveAgent() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   
   // Use any for session type since LiveSession is not exported directly or has a different name
   const sessionRef = useRef<any>(null);
@@ -191,7 +192,6 @@ export function useLiveAgent() {
             console.log('Session connected');
             setIsConnected(true);
             setIsListening(true);
-            await recorderRef.current?.start();
           },
           onmessage: async (message: any) => {
             // Handle Audio
@@ -210,18 +210,20 @@ export function useLiveAgent() {
 
             // Handle Tool Calls
             // Check both locations just in case, but cast to any to avoid TS errors if one doesn't exist on type
-            const toolCall = message.toolCall;
+            const toolCall = message.toolCall || message.serverContent?.toolCall;
             
             if (toolCall) {
                 console.log('Tool call received:', toolCall);
                 const functionCalls = toolCall.functionCalls;
-                const responses = functionCalls.map((call: any) => {
-                    const args = call.args as any;
-                    let result;
-                    
-                    if (call.name === 'get_school_data') {
-                        result = schoolDataService.getData(args.category);
-                    } else if (call.name === 'add_school_class') {
+                
+                if (functionCalls && functionCalls.length > 0) {
+                  const responses = functionCalls.map((call: any) => {
+                      const args = typeof call.args === 'string' ? JSON.parse(call.args) : call.args;
+                      let result;
+                      
+                      if (call.name === 'get_school_data') {
+                          result = schoolDataService.getData(args.category);
+                      } else if (call.name === 'add_school_class') {
                         result = schoolDataService.addSchoolClass(args.name, args.time, args.day, args.notes);
                     } else if (call.name === 'add_exam') {
                         result = schoolDataService.addExam(args.subject, args.date, args.topics);
@@ -259,6 +261,7 @@ export function useLiveAgent() {
                 sessionRef.current?.sendToolResponse({
                     functionResponses: responses
                 });
+              }
             }
             
             if (message.serverContent?.turnComplete) {
@@ -280,6 +283,10 @@ export function useLiveAgent() {
       });
 
       sessionRef.current = session;
+      
+      // Start recording AFTER session is assigned to ref to avoid race condition
+      await recorderRef.current?.start();
+      setAudioStream(recorderRef.current?.getStream() || null);
 
     } catch (err: any) {
       console.error('Connection failed:', err);
@@ -306,6 +313,7 @@ export function useLiveAgent() {
     setIsConnected(false);
     setIsListening(false);
     setIsSpeaking(false);
+    setAudioStream(null);
   }, []);
 
   useEffect(() => {
@@ -320,6 +328,7 @@ export function useLiveAgent() {
     isConnected,
     isListening,
     isSpeaking,
-    error
+    error,
+    audioStream
   };
 }

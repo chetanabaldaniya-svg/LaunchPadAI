@@ -18,6 +18,10 @@ class SchoolDataService {
         if (!this.data.progress) {
             this.data.progress = [...(INITIAL_SCHOOL_DATA.progress || [])];
         }
+        // Ensure documents exists if loading from old data
+        if (!this.data.documents) {
+            this.data.documents = [];
+        }
       } catch (e) {
         console.error('Failed to parse stored school data', e);
         this.data = { ...INITIAL_SCHOOL_DATA };
@@ -96,26 +100,28 @@ class SchoolDataService {
     return newClass;
   }
 
-  addExam(subject: string, date: string, topics: string, prerequisites: string = '') {
+  addExam(subject: string, date: string, topics: string, prerequisites: string = '', reminder: string = '') {
     const newExam: Exam = {
       id: Date.now().toString(),
       subject,
       date,
       topics,
-      prerequisites
+      prerequisites,
+      reminder
     };
     this.data.exams.push(newExam);
     this.save();
     return newExam;
   }
 
-  updateExam(id: string, date?: string, topics?: string, subject?: string, prerequisites?: string) {
+  updateExam(id: string, date?: string, topics?: string, subject?: string, prerequisites?: string, reminder?: string) {
     const examIndex = this.data.exams.findIndex(e => e.id === id);
     if (examIndex !== -1) {
       if (date) this.data.exams[examIndex].date = date;
       if (topics) this.data.exams[examIndex].topics = topics;
       if (subject) this.data.exams[examIndex].subject = subject;
       if (prerequisites !== undefined) this.data.exams[examIndex].prerequisites = prerequisites;
+      if (reminder !== undefined) this.data.exams[examIndex].reminder = reminder;
       this.save();
       return this.data.exams[examIndex];
     }
@@ -145,6 +151,43 @@ class SchoolDataService {
 
   deleteExam(id: string) {
     this.data.exams = this.data.exams.filter(e => e.id !== id);
+    this.save();
+  }
+
+  getDocuments() {
+    return this.data.documents || [];
+  }
+
+  addDocument(name: string, data: string, expiryDate: string) {
+    if (!this.data.documents) {
+      this.data.documents = [];
+    }
+    this.data.documents.push({
+      id: Date.now().toString(),
+      name,
+      data,
+      uploadDate: new Date().toISOString(),
+      expiryDate
+    });
+    this.save();
+  }
+
+  deleteDocument(id: string) {
+    if (!this.data.documents) return;
+    this.data.documents = this.data.documents.filter(d => d.id !== id);
+    this.save();
+  }
+
+  cleanupExpiredDocuments() {
+    if (!this.data.documents) return;
+    // Compare dates as strings (YYYY-MM-DD) to avoid timezone issues
+    // and ensure the document is kept UNTIL the end of the exam day.
+    const today = new Date().toISOString().split('T')[0];
+    
+    this.data.documents = this.data.documents.filter(d => {
+      // Keep if expiry date is today or in the future
+      return d.expiryDate >= today;
+    });
     this.save();
   }
 

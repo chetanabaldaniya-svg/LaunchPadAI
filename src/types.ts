@@ -15,6 +15,7 @@ export interface Exam {
   date: string;
   topics: string;
   prerequisites?: string;
+  reminder?: string;
 }
 
 export interface StudentProfile {
@@ -32,11 +33,20 @@ export interface SubjectProgress {
   lastUpdated: string;
 }
 
+export interface StoredDocument {
+  id: string;
+  name: string;
+  data: string; // base64
+  uploadDate: string;
+  expiryDate: string; // Date of the last exam
+}
+
 export interface SchoolData {
   timetable: SchoolClass[];
   exams: Exam[];
   profile: StudentProfile;
   progress: SubjectProgress[];
+  documents: StoredDocument[];
 }
 
 export type SchoolDataCategory = 'timetable' | 'exams' | 'profile' | 'progress';
