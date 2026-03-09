@@ -9,7 +9,30 @@ export const LiveAgent: React.FC = () => {
   const { connect, disconnect, isConnected, isListening, isSpeaking, error, audioStream } = useLiveAgent();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [speechRate, setSpeechRate] = useState(25); // Default to slow/deliberate as requested
+  const [sessionDuration, setSessionDuration] = useState(0);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    // Increment timer when it's the user's turn to speak
+    if (isConnected && !isSpeaking) {
+      interval = setInterval(() => {
+        setSessionDuration(prev => prev + 1);
+      }, 1000);
+    } else if (isSpeaking) {
+      // Reset timer when the agent is speaking
+      setSessionDuration(0);
+    } else if (!isConnected) {
+      setSessionDuration(0);
+    }
+    return () => clearInterval(interval);
+  }, [isConnected, isSpeaking]);
+
+  const formatDuration = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   useEffect(() => {
     // Check microphone permission
@@ -41,6 +64,11 @@ export const LiveAgent: React.FC = () => {
       <div className="flex items-center gap-2 text-xs md:text-sm font-medium tracking-wider uppercase text-slate-500">
         <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-600 shadow-[0_0_10px_#059669]' : 'bg-slate-300'}`} />
         {isConnected ? (isSpeaking ? t('agentSpeaking') : t('listening')) : t('offline')}
+        {isConnected && (
+          <span className="ml-2 font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
+            {formatDuration(sessionDuration)}
+          </span>
+        )}
       </div>
 
       {/* Visualizer */}

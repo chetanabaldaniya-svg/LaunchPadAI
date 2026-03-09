@@ -77,7 +77,13 @@ export class AudioRecorder {
 
   async start() {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       this.audioContext = new AudioContext({ sampleRate: 16000 });
       
       if (this.audioContext.state === 'suspended') {

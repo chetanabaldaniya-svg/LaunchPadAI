@@ -37,12 +37,12 @@ export function useLiveAgent() {
       
       recorderRef.current = new AudioRecorder((base64Data) => {
         if (sessionRef.current) {
-             sessionRef.current.sendRealtimeInput({
+             sessionRef.current.sendRealtimeInput([{
                 media: {
                     mimeType: "audio/pcm;rate=16000",
                     data: base64Data
                 }
-            });
+            }]);
         }
       });
 
@@ -57,10 +57,16 @@ export function useLiveAgent() {
       const languageInstruction = `
 # LANGUAGE ADAPTATION
 - The user's preferred UI language is set to "${language}".
-- **CRITICAL:** You must detect the language the user is speaking and respond in that EXACT same language.
+- **CRITICAL:** You must continuously detect the language the user is speaking in EVERY turn and respond in that EXACT same language.
+- If the user switches languages mid-conversation, you MUST immediately switch your spoken response to match their new language.
 - If they speak English, reply in English. If they speak Hindi, reply in Hindi.
 - If they mix languages (e.g., Hinglish), reply in a similar natural mix.
-- Do not strictly adhere to "${language}" if the user speaks something else. Adapt instantly.
+- Do not get stuck in one language. Always mirror the user's CURRENT language.
+
+# AUDIO FOCUS & NOISE REJECTION
+- **CRITICAL:** You must ONLY respond to clear, direct human speech.
+- IGNORE all background noise, typing, shuffling, coughing, or ambient room sounds.
+- If you hear audio but no clear human words, DO NOT respond. Stay silent and wait for the user to speak.
 `;
 
       // Determine speed instruction based on initialSpeed (0-100)
