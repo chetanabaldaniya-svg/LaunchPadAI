@@ -63,7 +63,7 @@
 **[Visual: Split screen showing `constants.ts` (System Instructions) on one side and the AI responding on the other.]**
 
 **Narrator:**
-"We steer the model using complex **System Instructions**. We define a specific persona—empathetic, organized, and patient. We even instruct it to adapt to the user's language instantly, whether they speak English, Hindi, Spanish, or a mix."
+"I steer the model using complex **System Instructions**. We define a specific persona—empathetic, organized, and patient. We even instruct it to adapt to the user's language instantly, whether they speak English, Hindi, Spanish, or a mix."
 
 **[Visual: A graphic showing 'Function Calling'. An arrow points from the AI to a 'Database' icon labeled 'School Data'.]**
 

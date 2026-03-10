@@ -21,7 +21,7 @@ export const ExamUploader: React.FC<ExamUploaderProps> = ({ onUploadComplete }) 
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      setError('Please upload a valid PDF file.');
+      setError(t('invalidPdf'));
       return;
     }
 
@@ -73,14 +73,14 @@ export const ExamUploader: React.FC<ExamUploaderProps> = ({ onUploadComplete }) 
             setSuccess(true);
             if (onUploadComplete) onUploadComplete();
         } else {
-            setError('No new exams found. They might already exist.');
+            setError(t('noNewExams'));
         }
       } else {
-        setError(`No exam data found${gradeLevel ? ` for "${gradeLevel}"` : ''}. Please check your Profile grade level.`);
+        setError(t('noExamDataFound'));
       }
     } catch (err) {
       console.error(err);
-      setError('Failed to process the PDF. Please try again.');
+      setError(t('failedToProcessPdf'));
     } finally {
       setIsUploading(false);
       // Reset file input
@@ -110,7 +110,7 @@ export const ExamUploader: React.FC<ExamUploaderProps> = ({ onUploadComplete }) 
             className="flex items-center justify-center gap-3 p-8 bg-slate-50 border border-slate-200 rounded-2xl text-slate-600"
           >
             <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
-            <span className="text-sm font-medium">Analyzing PDF & Extracting Exams...</span>
+            <span className="text-sm font-medium">{t('analyzingPdf')}</span>
           </motion.div>
         ) : success ? (
            <motion.div
@@ -124,7 +124,7 @@ export const ExamUploader: React.FC<ExamUploaderProps> = ({ onUploadComplete }) 
                 <div className="p-1 bg-emerald-100 rounded-full">
                     <Check className="w-4 h-4" />
                 </div>
-                <span className="text-sm font-medium">Exams successfully imported!</span>
+                <span className="text-sm font-medium">{t('examsImported')}</span>
             </div>
             <button onClick={() => setSuccess(false)} className="text-emerald-500 hover:text-emerald-700">
                 <X className="w-4 h-4" />
@@ -141,9 +141,9 @@ export const ExamUploader: React.FC<ExamUploaderProps> = ({ onUploadComplete }) 
             <div className="p-4 bg-slate-50 rounded-full mb-3 group-hover:bg-white group-hover:shadow-md transition-all duration-300">
               <Upload className="w-6 h-6 text-slate-400 group-hover:text-emerald-500 transition-colors" />
             </div>
-            <h3 className="text-sm font-semibold text-slate-900 mb-1">Upload Exam Timetable PDF</h3>
+            <h3 className="text-sm font-semibold text-slate-900 mb-1">{t('uploadExamPdf')}</h3>
             <p className="text-xs text-slate-500 text-center max-w-[200px]">
-              Drag & drop or click to upload. We'll automatically extract dates and subjects.
+              {t('uploadExamPdfDesc')}
             </p>
             
             {error && (

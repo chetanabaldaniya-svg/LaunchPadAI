@@ -318,7 +318,7 @@ export const ScheduleEditor: React.FC = () => {
           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm mb-4">
             <div className="px-4 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
-                <FileText className="w-4 h-4" /> {t('storedDocuments') || 'Stored Documents'}
+                <FileText className="w-4 h-4" /> {t('storedDocuments')}
               </h3>
             </div>
             <div className="divide-y divide-slate-100">
@@ -426,7 +426,7 @@ export const ScheduleEditor: React.FC = () => {
                         const newExams = exams.map(ex => ex.id === item.id ? { ...ex, reminder: e.target.value } : ex);
                         setExams(newExams);
                       }}
-                      placeholder="e.g. 2 days before"
+                      placeholder={t('placeholderDaysBefore')}
                       className="bg-white border border-slate-200 rounded px-2 py-1 w-full focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-xs"
                     />
                   ) : (
@@ -484,7 +484,7 @@ export const ScheduleEditor: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm p-4">
           <div className="bg-white border border-slate-200 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-slate-900">Class Details: {editingClass.name}</h3>
+              <h3 className="text-lg font-medium text-slate-900">{t('classDetails')} {editingClass.name}</h3>
               <button 
                 onClick={() => setEditingClass(null)}
                 className="text-slate-400 hover:text-slate-600"
@@ -495,46 +495,46 @@ export const ScheduleEditor: React.FC = () => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Topics Covered</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('topicsCovered')}</label>
                 <input
                   type="text"
                   value={editingClass.topics || ''}
                   onChange={(e) => setEditingClass({ ...editingClass, topics: e.target.value })}
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="e.g., Quadratic Equations, Photosynthesis"
+                  placeholder={t('placeholderTopics')}
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Required Materials</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('requiredMaterials')}</label>
                   <input
                     type="text"
                     value={editingClass.materials || ''}
                     onChange={(e) => setEditingClass({ ...editingClass, materials: e.target.value })}
                     className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="e.g., Textbook, Calculator"
+                    placeholder={t('placeholderItems')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Homework</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">{t('homework')}</label>
                   <input
                     type="text"
                     value={editingClass.homework || ''}
                     onChange={(e) => setEditingClass({ ...editingClass, homework: e.target.value })}
                     className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    placeholder="e.g., Read Ch. 4, Ex. 1-5"
+                    placeholder={t('placeholderNotes')}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">General Notes</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('generalNotes')}</label>
                 <textarea
                   value={editingClass.notes}
                   onChange={(e) => setEditingClass({ ...editingClass, notes: e.target.value })}
                   className="w-full h-24 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
-                  placeholder="Any other important details..."
+                  placeholder={t('placeholderOtherDetails')}
                 />
               </div>
             </div>
@@ -566,7 +566,7 @@ export const ScheduleEditor: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 backdrop-blur-sm p-4">
           <div className="bg-white border border-slate-200 rounded-xl p-6 max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-slate-900">Exam Details: {editingExam.subject}</h3>
+              <h3 className="text-lg font-medium text-slate-900">{t('examDetails')} {editingExam.subject}</h3>
               <button 
                 onClick={() => setEditingExam(null)}
                 className="text-slate-400 hover:text-slate-600"
@@ -577,33 +577,33 @@ export const ScheduleEditor: React.FC = () => {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Topics to Cover</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('topicsToCover')}</label>
                 <textarea
                   value={editingExam.topics}
                   onChange={(e) => setEditingExam({ ...editingExam, topics: e.target.value })}
                   className="w-full h-32 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
-                  placeholder="List the specific topics..."
+                  placeholder={t('placeholderSpecificTopics')}
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Prerequisite Knowledge</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('prerequisiteKnowledge')}</label>
                 <textarea
                   value={editingExam.prerequisites || ''}
                   onChange={(e) => setEditingExam({ ...editingExam, prerequisites: e.target.value })}
                   className="w-full h-24 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
-                  placeholder="What do you need to know before starting?"
+                  placeholder={t('placeholderBeforeStarting')}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Reminder / Instructions</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('reminderInstructions')}</label>
                 <input
                   type="text"
                   value={editingExam.reminder || ''}
                   onChange={(e) => setEditingExam({ ...editingExam, reminder: e.target.value })}
                   className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="e.g. Bring calculator, Open book"
+                  placeholder={t('placeholderReminder')}
                 />
               </div>
             </div>

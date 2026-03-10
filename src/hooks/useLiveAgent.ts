@@ -201,17 +201,22 @@ export function useLiveAgent() {
           },
           onmessage: async (message: any) => {
             // Handle Audio
-            const audioData = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData) {
-              setIsSpeaking(true);
-              const binaryString = window.atob(audioData);
-              const len = binaryString.length;
-              const bytes = new Uint8Array(len);
-              for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
+            const parts = message.serverContent?.modelTurn?.parts;
+            if (parts) {
+              for (const part of parts) {
+                const audioData = part.inlineData?.data;
+                if (audioData) {
+                  setIsSpeaking(true);
+                  const binaryString = window.atob(audioData);
+                  const len = binaryString.length;
+                  const bytes = new Uint8Array(len);
+                  for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                  }
+                  playerRef.current?.add16BitPCM(bytes.buffer);
+                  setTimeout(() => setIsSpeaking(false), 2000); 
+                }
               }
-              playerRef.current?.add16BitPCM(bytes.buffer);
-              setTimeout(() => setIsSpeaking(false), 2000); 
             }
 
             // Handle Tool Calls
