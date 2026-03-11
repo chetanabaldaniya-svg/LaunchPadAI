@@ -357,14 +357,12 @@ export const ScheduleEditor: React.FC = () => {
         </div>
         
         {/* PDF Uploader */}
-        {isEditing && (
-            <div className="mb-4">
-                <ExamUploader onUploadComplete={() => {
-                  setExams(schoolDataService.getExams());
-                  setDocuments(schoolDataService.getDocuments());
-                }} />
-            </div>
-        )}
+        <div className="mb-4">
+            <ExamUploader onUploadComplete={() => {
+              setExams(schoolDataService.getExams());
+              setDocuments(schoolDataService.getDocuments());
+            }} />
+        </div>
 
         {/* Stored Documents */}
         {documents.length > 0 && (
