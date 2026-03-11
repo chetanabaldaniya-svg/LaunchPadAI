@@ -15,13 +15,33 @@ interface StudyContextType {
 
 const StudyContext = createContext<StudyContextType | undefined>(undefined);
 
+const getInitialLanguage = (): string => {
+  if (typeof window === 'undefined') return 'English';
+  
+  const savedLang = localStorage.getItem('preferredLanguage');
+  if (savedLang) return savedLang;
+
+  const browserLang = navigator.language.toLowerCase();
+  if (browserLang.startsWith('hi')) return 'Hindi';
+  if (browserLang.startsWith('gu')) return 'Gujarati';
+  if (browserLang.startsWith('es')) return 'Spanish';
+  if (browserLang.startsWith('fr')) return 'French';
+  
+  return 'English';
+};
+
 export const StudyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [totalTime, setTotalTime] = useState(0);
   const [topic, setTopic] = useState<string | null>(null);
-  const [language, setLanguage] = useState('English');
+  const [language, setLanguageState] = useState(getInitialLanguage());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const setLanguage = (lang: string) => {
+    setLanguageState(lang);
+    localStorage.setItem('preferredLanguage', lang);
+  };
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {

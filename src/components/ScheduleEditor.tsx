@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { schoolDataService } from '../services/schoolData';
 import { SchoolClass, Exam } from '../types';
-import { Edit2, Save, X, Calendar, Clock, BookOpen, Info, RefreshCw, FileText, Trash2, Download } from 'lucide-react';
+import { Edit2, Save, X, Calendar, Clock, BookOpen, Info, RefreshCw, FileText, Trash2, Download, AlertCircle } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { ExamUploader } from './ExamUploader';
 import { StoredDocument } from '../types';
@@ -12,6 +12,7 @@ export const ScheduleEditor: React.FC = () => {
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
   const [deletingItem, setDeletingItem] = useState<{ type: 'class' | 'exam' | 'document', id: string } | null>(null);
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
@@ -29,6 +30,7 @@ export const ScheduleEditor: React.FC = () => {
     const handleMessage = async (event: MessageEvent) => {
       if (event.data?.type === 'OAUTH_SUCCESS' && event.data.tokens) {
         setIsSyncing(true);
+        setSyncStatus({ type: null, message: '' });
         try {
           const { access_token } = event.data.tokens;
           const result = await schoolDataService.syncCalendar(access_token);
@@ -37,10 +39,19 @@ export const ScheduleEditor: React.FC = () => {
           setTimetable(schoolDataService.getTimetable());
           setExams(schoolDataService.getExams());
           
-          alert(`Synced! Added ${result.newClassesCount} classes and ${result.newExamsCount} exams.`);
-        } catch (error) {
+          setSyncStatus({ 
+            type: 'success', 
+            message: `Synced! Added ${result.newClassesCount} classes and ${result.newExamsCount} exams.` 
+          });
+          
+          // Clear success message after 5 seconds
+          setTimeout(() => setSyncStatus({ type: null, message: '' }), 5000);
+        } catch (error: any) {
           console.error('Sync failed', error);
-          alert('Failed to sync calendar.');
+          setSyncStatus({ 
+            type: 'error', 
+            message: error.message || 'Failed to sync calendar. Please try again.' 
+          });
         } finally {
           setIsSyncing(false);
         }
@@ -53,7 +64,11 @@ export const ScheduleEditor: React.FC = () => {
 
   const handleConnectCalendar = async () => {
     try {
+      setSyncStatus({ type: null, message: '' });
       const response = await fetch('/api/auth/google/url');
+      if (!response.ok) {
+        throw new Error('Failed to fetch authentication URL from server.');
+      }
       const { url } = await response.json();
       
       const width = 500;
@@ -61,14 +76,21 @@ export const ScheduleEditor: React.FC = () => {
       const left = window.screen.width / 2 - width / 2;
       const top = window.screen.height / 2 - height / 2;
       
-      window.open(
+      const popup = window.open(
         url,
         'Google Calendar Auth',
         `width=${width},height=${height},left=${left},top=${top}`
       );
-    } catch (error) {
+
+      if (!popup) {
+        throw new Error('Popup blocked. Please allow popups for this site to connect your calendar.');
+      }
+    } catch (error: any) {
       console.error('Failed to get auth URL', error);
-      alert('Failed to initiate calendar connection.');
+      setSyncStatus({ 
+        type: 'error', 
+        message: error.message || 'Failed to initiate calendar connection. Please check your network.' 
+      });
     }
   };
 
@@ -160,6 +182,37 @@ export const ScheduleEditor: React.FC = () => {
         </button>
         </div>
       </div>
+
+      {/* Sync Status Message */}
+      {syncStatus.type && (
+        <div className={`p-4 rounded-xl flex items-start gap-3 border ${
+          syncStatus.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+            : 'bg-red-50 border-red-200 text-red-700'
+        }`}>
+          {syncStatus.type === 'success' ? (
+            <div className="p-1 bg-emerald-100 rounded-full">
+              <Calendar className="w-4 h-4 text-emerald-600" />
+            </div>
+          ) : (
+            <div className="p-1 bg-red-100 rounded-full">
+              <AlertCircle className="w-4 h-4 text-red-600" />
+            </div>
+          )}
+          <div className="flex-1">
+            <h4 className="text-sm font-bold mb-0.5">
+              {syncStatus.type === 'success' ? 'Sync Successful' : 'Sync Failed'}
+            </h4>
+            <p className="text-sm opacity-90">{syncStatus.message}</p>
+          </div>
+          <button 
+            onClick={() => setSyncStatus({ type: null, message: '' })}
+            className="p-1 hover:bg-black/5 rounded-md transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Timetable Grid */}
       <div className="grid gap-4">
