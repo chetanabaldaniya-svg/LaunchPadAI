@@ -10,6 +10,9 @@ export class AudioStreamPlayer {
     this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
       sampleRate: this.sampleRate,
     });
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
   }
 
   add16BitPCM(arrayBuffer: ArrayBuffer) {

@@ -37,21 +37,38 @@ export function useLiveAgent() {
       
       recorderRef.current = new AudioRecorder((base64Data) => {
         if (sessionRef.current) {
-             sessionRef.current.sendRealtimeInput([{
+             sessionRef.current.sendRealtimeInput({
                 media: {
                     mimeType: "audio/pcm;rate=16000",
                     data: base64Data
                 }
-            }]);
+            });
         }
       });
 
       const now = new Date();
+      
+      // Inject current school data so the AI knows it immediately without needing to call tools
+      const currentTimetable = schoolDataService.getTimetable();
+      const currentExams = schoolDataService.getExams();
+      const currentProfile = schoolDataService.getProfile();
+      
       const timeInstruction = `
 # CURRENT CONTEXT
 - Current Date: ${now.toLocaleDateString()}
 - Current Day: ${now.toLocaleDateString('en-US', { weekday: 'long' })}
 - Current Time: ${now.toLocaleTimeString()}
+
+# STUDENT PROFILE
+- Name: ${currentProfile.name || 'Student'}
+- Grade Level: ${currentProfile.gradeLevel || 'Not set'}
+- Goals: ${currentProfile.goals || 'Not set'}
+
+# CURRENT TIMETABLE (Weekly Classes)
+${currentTimetable.length > 0 ? currentTimetable.map(c => `- ${c.day} at ${c.time}: ${c.name} (Notes: ${c.notes || 'none'}, Topics: ${c.topics || 'none'}, Homework: ${c.homework || 'none'})`).join('\n') : '- No classes scheduled yet.'}
+
+# UPCOMING EXAMS
+${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (Topics: ${e.topics || 'none'}, Reminder: ${e.reminder || 'none'})`).join('\n') : '- No upcoming exams.'}
 `;
 
       const languageInstruction = `
@@ -89,6 +106,9 @@ export function useLiveAgent() {
         config: {
           systemInstruction: timeInstruction + languageInstruction + speedInstruction + SYSTEM_INSTRUCTION,
           responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } },
+          },
           tools: [{
             functionDeclarations: [
               {
@@ -176,19 +196,11 @@ export function useLiveAgent() {
               },
               {
                 name: "stop_study_sprint",
-                description: "Stop the current study timer.",
-                parameters: {
-                  type: Type.OBJECT,
-                  properties: {},
-                }
+                description: "Stop the current study timer."
               },
               {
                 name: "get_timer_status",
-                description: "Get the current status of the study timer.",
-                parameters: {
-                  type: Type.OBJECT,
-                  properties: {},
-                }
+                description: "Get the current status of the study timer."
               }
             ]
           }]

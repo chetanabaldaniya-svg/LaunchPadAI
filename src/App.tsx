@@ -100,10 +100,10 @@ const AppContent = () => {
               <Rocket className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none">
-                LaunchPad
+              <h1 className="text-lg font-bold tracking-tight text-slate-900 leading-none whitespace-nowrap">
+                LaunchPad AI
               </h1>
-              <span className="text-[10px] text-slate-500 font-medium tracking-wide uppercase">AI Coach</span>
+              <span className="text-[10px] text-slate-500 font-medium tracking-wide uppercase">Coach</span>
             </div>
           </div>
           <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-slate-400">
@@ -164,7 +164,7 @@ const AppContent = () => {
              <div className="p-2 bg-emerald-600 rounded-lg">
               <Rocket className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-slate-900">LaunchPad AI</span>
+            <span className="font-bold text-slate-900 whitespace-nowrap">LaunchPad AI</span>
           </div>
           <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-slate-600">
             <Menu className="w-6 h-6" />
