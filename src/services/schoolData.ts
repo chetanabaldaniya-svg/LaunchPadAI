@@ -22,6 +22,10 @@ class SchoolDataService {
         if (!this.data.documents) {
             this.data.documents = [];
         }
+        // Ensure stats exists if loading from old data
+        if (!this.data.stats) {
+            this.data.stats = { ...INITIAL_SCHOOL_DATA.stats };
+        }
       } catch (e) {
         console.error('Failed to parse stored school data', e);
         this.data = { ...INITIAL_SCHOOL_DATA };
@@ -51,6 +55,10 @@ class SchoolDataService {
     return this.data.progress || [];
   }
 
+  getStats(): any {
+    return this.data.stats || { ...INITIAL_SCHOOL_DATA.stats };
+  }
+
   getData(category: SchoolDataCategory): any {
     if (category === 'timetable') {
       return this.getTimetable();
@@ -60,6 +68,8 @@ class SchoolDataService {
       return this.getProfile();
     } else if (category === 'progress') {
       return this.getProgress();
+    } else if (category === 'stats') {
+      return this.getStats();
     }
     return null;
   }
@@ -82,6 +92,45 @@ class SchoolDataService {
   updateProgress(progress: any[]) {
     this.data.progress = progress;
     this.save();
+  }
+
+  updateStats(stats: any) {
+    this.data.stats = stats;
+    this.save();
+  }
+
+  addFocusPoints(points: number) {
+    const stats = this.getStats();
+    stats.focusPoints += points;
+    
+    // Check streak
+    const today = new Date().toISOString().split('T')[0];
+    if (stats.lastStudyDate) {
+      const lastDate = new Date(stats.lastStudyDate);
+      const currentDate = new Date(today);
+      const diffTime = Math.abs(currentDate.getTime() - lastDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      
+      if (diffDays === 1) {
+        // Consecutive day
+        stats.currentStreak += 1;
+      } else if (diffDays > 1) {
+        // Streak broken
+        stats.currentStreak = 1;
+      }
+      // If diffDays === 0, same day, streak doesn't change
+    } else {
+      // First time studying
+      stats.currentStreak = 1;
+    }
+    
+    if (stats.currentStreak > stats.longestStreak) {
+      stats.longestStreak = stats.currentStreak;
+    }
+    
+    stats.lastStudyDate = today;
+    this.updateStats(stats);
+    return stats;
   }
 
   addSchoolClass(name: string, time: string, day: string, notes: string, topics: string = '', materials: string = '', homework: string = '') {

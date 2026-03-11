@@ -1,16 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLiveAgent } from '../hooks/useLiveAgent';
 import { AudioVisualizer } from './AudioVisualizer';
-import { Mic, MicOff, Radio, AlertCircle, Gauge } from 'lucide-react';
+import { Mic, MicOff, Radio, AlertCircle, Gauge, Camera, CameraOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const LiveAgent: React.FC = () => {
-  const { connect, disconnect, isConnected, isListening, isSpeaking, error, audioStream } = useLiveAgent();
+  const { connect, disconnect, isConnected, isListening, isSpeaking, error, audioStream, isCameraOn, toggleCamera, videoStream } = useLiveAgent();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [speechRate, setSpeechRate] = useState(25); // Default to slow/deliberate as requested
   const [sessionDuration, setSessionDuration] = useState(0);
   const { t } = useTranslation();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current && videoStream) {
+      videoRef.current.srcObject = videoStream;
+    }
+  }, [videoStream]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -77,30 +84,72 @@ export const LiveAgent: React.FC = () => {
         <AudioVisualizer isListening={isListening} isSpeaking={isSpeaking} audioStream={audioStream || undefined} />
       </div>
 
-      {/* Control Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={handleToggleConnection}
-        className={`
-          relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center
-          transition-all duration-300 shadow-xl
-          ${isConnected 
-            ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' 
-            : 'bg-emerald-600 text-white border border-emerald-500 hover:bg-emerald-500 shadow-[0_0_30px_rgba(5,150,105,0.3)]'}
-        `}
-      >
-        {isConnected ? (
-          <MicOff className="w-6 h-6 md:w-8 md:h-8" />
-        ) : (
-          <Mic className="w-6 h-6 md:w-8 md:h-8" />
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-6">
+        {/* Camera Toggle (Only visible when connected) */}
+        {isConnected && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleCamera}
+            className={`
+              w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center
+              transition-all duration-300 shadow-md
+              ${isCameraOn 
+                ? 'bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100' 
+                : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}
+            `}
+            title={isCameraOn ? "Turn off camera" : "Turn on camera for Homework Help"}
+          >
+            {isCameraOn ? <Camera className="w-5 h-5 md:w-6 md:h-6" /> : <CameraOff className="w-5 h-5 md:w-6 md:h-6" />}
+          </motion.button>
         )}
-        
-        {/* Ripple Effect when connecting */}
-        {!isConnected && (
-          <span className="absolute inset-0 rounded-full border border-emerald-500/30 animate-ping" />
-        )}
-      </motion.button>
+
+        {/* Mic Control Button */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleToggleConnection}
+          className={`
+            relative w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center
+            transition-all duration-300 shadow-xl
+            ${isConnected 
+              ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' 
+              : 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white border border-indigo-400 hover:from-indigo-600 hover:to-violet-700 shadow-[0_0_30px_rgba(79,70,229,0.4)]'}
+          `}
+        >
+          {isConnected ? (
+            <MicOff className="w-6 h-6 md:w-8 md:h-8" />
+          ) : (
+            <Mic className="w-6 h-6 md:w-8 md:h-8" />
+          )}
+          
+          {/* Ripple Effect when connecting */}
+          {!isConnected && (
+            <span className="absolute inset-0 rounded-full border border-indigo-500/50 animate-ping" />
+          )}
+        </motion.button>
+
+        {/* Placeholder to balance the flex layout if camera button is visible */}
+        {isConnected && <div className="w-12 md:w-14" />}
+      </div>
+
+      {/* Video Preview */}
+      {isCameraOn && (
+        <div className="w-full max-w-[240px] aspect-video bg-slate-900 rounded-xl overflow-hidden shadow-lg border border-slate-200 relative mt-2">
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            muted 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-md">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-[10px] font-medium text-white uppercase tracking-wider">Live</span>
+          </div>
+        </div>
+      )}
 
       {/* Speed Slider */}
       {!isConnected && (

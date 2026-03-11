@@ -41,12 +41,20 @@ export interface StoredDocument {
   expiryDate: string; // Date of the last exam
 }
 
+export interface GamificationStats {
+  focusPoints: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastStudyDate: string | null;
+}
+
 export interface SchoolData {
   timetable: SchoolClass[];
   exams: Exam[];
   profile: StudentProfile;
   progress: SubjectProgress[];
   documents: StoredDocument[];
+  stats: GamificationStats;
 }
 
-export type SchoolDataCategory = 'timetable' | 'exams' | 'profile' | 'progress';
+export type SchoolDataCategory = 'timetable' | 'exams' | 'profile' | 'progress' | 'stats';

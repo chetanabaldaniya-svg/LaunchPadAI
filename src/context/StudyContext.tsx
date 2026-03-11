@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import { schoolDataService } from '../services/schoolData';
 
 interface StudyContextType {
   timeLeft: number;
@@ -50,6 +51,15 @@ export const StudyProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           if (prev <= 1) {
             setIsActive(false);
             if (timerRef.current) clearInterval(timerRef.current);
+            
+            // Award points based on total time (e.g., 1 point per minute)
+            const minutes = Math.floor(totalTime / 60);
+            if (minutes > 0) {
+              schoolDataService.addFocusPoints(minutes);
+              // Trigger a custom event so other components can update
+              window.dispatchEvent(new Event('statsUpdated'));
+            }
+            
             return 0;
           }
           return prev - 1;
@@ -63,7 +73,7 @@ export const StudyProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isActive, timeLeft]);
+  }, [isActive, timeLeft, totalTime]);
 
   const startSprint = (minutes: number, topic: string = 'Focus Session') => {
     const seconds = minutes * 60;

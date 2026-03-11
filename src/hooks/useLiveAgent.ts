@@ -11,11 +11,15 @@ export function useLiveAgent() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+  const [isCameraOn, setIsCameraOn] = useState(false);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   
   // Use any for session type since LiveSession is not exported directly or has a different name
   const sessionRef = useRef<any>(null);
   const recorderRef = useRef<AudioRecorder | null>(null);
   const playerRef = useRef<AudioStreamPlayer | null>(null);
+  const videoIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const videoElementRef = useRef<HTMLVideoElement | null>(null);
 
   // Access Study Context
   const { startSprint, stopTimer, pauseTimer, resumeTimer, timeLeft, isActive, topic, language } = useStudySession();
@@ -25,6 +29,69 @@ export function useLiveAgent() {
   useEffect(() => {
     studyControlsRef.current = { startSprint, stopTimer, pauseTimer, resumeTimer, timeLeft, isActive, topic };
   }, [startSprint, stopTimer, pauseTimer, resumeTimer, timeLeft, isActive, topic]);
+
+  const stopCamera = useCallback(() => {
+    if (videoIntervalRef.current) clearInterval(videoIntervalRef.current);
+    if (videoStream) {
+      videoStream.getTracks().forEach(track => track.stop());
+      setVideoStream(null);
+    }
+    if (videoElementRef.current) {
+      videoElementRef.current.srcObject = null;
+      videoElementRef.current = null;
+    }
+    setIsCameraOn(false);
+  }, [videoStream]);
+
+  const startCamera = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } } 
+      });
+      setVideoStream(stream);
+      setIsCameraOn(true);
+      
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.play();
+      videoElementRef.current = video;
+      
+      const canvas = document.createElement('canvas');
+      
+      videoIntervalRef.current = setInterval(() => {
+        if (sessionRef.current && video.readyState >= 2) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const base64Data = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
+            try {
+              sessionRef.current.sendRealtimeInput({
+                media: {
+                  mimeType: "image/jpeg",
+                  data: base64Data
+                }
+              });
+            } catch (e) {
+              console.error("Error sending video frame", e);
+            }
+          }
+        }
+      }, 1000); // 1 frame per second
+    } catch (err: any) {
+      console.error("Failed to start camera", err);
+      setError("Failed to access camera: " + err.message);
+    }
+  }, []);
+
+  const toggleCamera = useCallback(() => {
+    if (isCameraOn) {
+      stopCamera();
+    } else {
+      startCamera();
+    }
+  }, [isCameraOn, startCamera, stopCamera]);
 
   const connect = useCallback(async (initialSpeed = 50) => {
     try {
@@ -52,6 +119,7 @@ export function useLiveAgent() {
       const currentTimetable = schoolDataService.getTimetable();
       const currentExams = schoolDataService.getExams();
       const currentProfile = schoolDataService.getProfile();
+      const currentStats = schoolDataService.getStats();
       
       const timeInstruction = `
 # CURRENT CONTEXT
@@ -59,10 +127,13 @@ export function useLiveAgent() {
 - Current Day: ${now.toLocaleDateString('en-US', { weekday: 'long' })}
 - Current Time: ${now.toLocaleTimeString()}
 
-# STUDENT PROFILE
+# STUDENT PROFILE & STATS
 - Name: ${currentProfile.name || 'Student'}
 - Grade Level: ${currentProfile.gradeLevel || 'Not set'}
 - Goals: ${currentProfile.goals || 'Not set'}
+- Study Streak: ${currentStats.currentStreak} days
+- Focus Points: ${currentStats.focusPoints} points
+- **Coach Note:** If their streak is high, congratulate them. If points are high, tell them they are crushing it.
 
 # CURRENT TIMETABLE (Weekly Classes)
 ${currentTimetable.length > 0 ? currentTimetable.map(c => `- ${c.day} at ${c.time}: ${c.name} (Notes: ${c.notes || 'none'}, Topics: ${c.topics || 'none'}, Homework: ${c.homework || 'none'})`).join('\n') : '- No classes scheduled yet.'}
@@ -101,10 +172,18 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
 - If the speed is low (<40), ensure you pause frequently to let the student process tasks (like packing a bag).
 `;
 
+      const visionInstruction = `
+# VISION & HOMEWORK HELP
+- The user may turn on their camera to show you their homework, a math problem, or their environment.
+- If they ask you to "look at this" or "help me with this problem", you can see the video feed.
+- **CRITICAL:** When helping with homework, DO NOT just give the final answer. Act as a coach: give hints, ask guiding questions, and help them arrive at the answer themselves.
+- If you cannot see clearly, politely ask them to move the camera closer or ensure good lighting.
+`;
+
       const session = await ai.live.connect({
         model: "gemini-2.5-flash-native-audio-preview-09-2025",
         config: {
-          systemInstruction: timeInstruction + languageInstruction + speedInstruction + SYSTEM_INSTRUCTION,
+          systemInstruction: timeInstruction + languageInstruction + speedInstruction + visionInstruction + SYSTEM_INSTRUCTION,
           responseModalities: [Modality.AUDIO],
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } },
@@ -333,11 +412,13 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
         }
     }
     
+    stopCamera();
+    
     setIsConnected(false);
     setIsListening(false);
     setIsSpeaking(false);
     setAudioStream(null);
-  }, []);
+  }, [stopCamera]);
 
   useEffect(() => {
     return () => {
@@ -352,6 +433,9 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
     isListening,
     isSpeaking,
     error,
-    audioStream
+    audioStream,
+    isCameraOn,
+    toggleCamera,
+    videoStream
   };
 }
