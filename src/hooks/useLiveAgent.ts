@@ -13,6 +13,7 @@ export function useLiveAgent() {
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   
   // Use any for session type since LiveSession is not exported directly or has a different name
   const sessionRef = useRef<any>(null);
@@ -92,6 +93,15 @@ export function useLiveAgent() {
       startCamera();
     }
   }, [isCameraOn, startCamera, stopCamera]);
+
+  const toggleMute = useCallback(() => {
+    if (audioStream) {
+      audioStream.getAudioTracks().forEach(track => {
+        track.enabled = !track.enabled;
+      });
+      setIsMuted(!audioStream.getAudioTracks()[0].enabled);
+    }
+  }, [audioStream]);
 
   const connect = useCallback(async (initialSpeed = 50) => {
     try {
@@ -418,6 +428,7 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
     setIsListening(false);
     setIsSpeaking(false);
     setAudioStream(null);
+    setIsMuted(false);
   }, [stopCamera]);
 
   useEffect(() => {
@@ -436,6 +447,8 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
     audioStream,
     isCameraOn,
     toggleCamera,
-    videoStream
+    videoStream,
+    isMuted,
+    toggleMute
   };
 }

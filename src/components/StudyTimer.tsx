@@ -26,7 +26,7 @@ export const StudyTimer: React.FC = () => {
         <div className="text-center py-4">
           <p className="text-slate-400 text-sm mb-4">{t('readyToFocus')}</p>
           <button 
-            onClick={() => startSprint(25)}
+            onClick={() => startSprint(1)}
             className="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-2 mx-auto"
           >
             <Zap className="w-4 h-4" />

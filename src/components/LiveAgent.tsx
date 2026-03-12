@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLiveAgent } from '../hooks/useLiveAgent';
 import { AudioVisualizer } from './AudioVisualizer';
-import { Mic, MicOff, Radio, AlertCircle, Gauge, Camera, CameraOff } from 'lucide-react';
+import { Mic, MicOff, PhoneOff, AlertCircle, Gauge, Camera, CameraOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const LiveAgent: React.FC = () => {
-  const { connect, disconnect, isConnected, isListening, isSpeaking, error, audioStream, isCameraOn, toggleCamera, videoStream } = useLiveAgent();
+  const { connect, disconnect, isConnected, isListening, isSpeaking, error, audioStream, isCameraOn, toggleCamera, videoStream, isMuted, toggleMute } = useLiveAgent();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [speechRate, setSpeechRate] = useState(25); // Default to slow/deliberate as requested
   const [sessionDuration, setSessionDuration] = useState(0);
@@ -69,8 +69,8 @@ export const LiveAgent: React.FC = () => {
     <div className="flex flex-col items-center gap-3 md:gap-6 w-full max-w-md mx-auto">
       {/* Status Indicator */}
       <div className="flex items-center gap-2 text-xs md:text-sm font-medium tracking-wider uppercase text-slate-500">
-        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-600 shadow-[0_0_10px_#059669]' : 'bg-slate-300'}`} />
-        {isConnected ? (isSpeaking ? t('agentSpeaking') : t('listening')) : t('offline')}
+        <div className={`w-2 h-2 rounded-full ${isConnected ? (isMuted ? 'bg-orange-500 shadow-[0_0_10px_#f97316]' : 'bg-emerald-600 shadow-[0_0_10px_#059669]') : 'bg-slate-300'}`} />
+        {isConnected ? (isMuted ? 'Muted' : (isSpeaking ? t('agentSpeaking') : t('listening'))) : t('offline')}
         {isConnected && (
           <span className="ml-2 font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
             {formatDuration(sessionDuration)}
@@ -85,7 +85,7 @@ export const LiveAgent: React.FC = () => {
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-center gap-6">
+      <div className="flex items-center justify-center gap-4 md:gap-6">
         {/* Camera Toggle (Only visible when connected) */}
         {isConnected && (
           <motion.button
@@ -105,7 +105,7 @@ export const LiveAgent: React.FC = () => {
           </motion.button>
         )}
 
-        {/* Mic Control Button */}
+        {/* Main Connect/Disconnect Button */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -117,9 +117,10 @@ export const LiveAgent: React.FC = () => {
               ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' 
               : 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white border border-indigo-400 hover:from-indigo-600 hover:to-violet-700 shadow-[0_0_30px_rgba(79,70,229,0.4)]'}
           `}
+          title={isConnected ? "End Session" : "Start Session"}
         >
           {isConnected ? (
-            <MicOff className="w-6 h-6 md:w-8 md:h-8" />
+            <PhoneOff className="w-6 h-6 md:w-8 md:h-8" />
           ) : (
             <Mic className="w-6 h-6 md:w-8 md:h-8" />
           )}
@@ -130,8 +131,27 @@ export const LiveAgent: React.FC = () => {
           )}
         </motion.button>
 
-        {/* Placeholder to balance the flex layout if camera button is visible */}
-        {isConnected && <div className="w-12 md:w-14" />}
+        {/* Mute Toggle (Only visible when connected) */}
+        {isConnected && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleMute}
+            className={`
+              w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center
+              transition-all duration-300 shadow-md
+              ${isMuted 
+                ? 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100' 
+                : 'bg-white text-slate-400 border border-slate-200 hover:bg-slate-50'}
+            `}
+            title={isMuted ? "Unmute microphone" : "Mute microphone"}
+          >
+            {isMuted ? <MicOff className="w-5 h-5 md:w-6 md:h-6" /> : <Mic className="w-5 h-5 md:w-6 md:h-6" />}
+          </motion.button>
+        )}
+
+        {/* Placeholder to balance the flex layout if buttons are not visible */}
+        {!isConnected && <div className="w-12 md:w-14 hidden" />}
       </div>
 
       {/* Video Preview */}

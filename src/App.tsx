@@ -31,24 +31,6 @@ const AppContent = () => {
 
   const renderContent = () => {
     switch (activeView) {
-      case 'coach':
-        return (
-          <div className="min-h-full flex flex-col items-center justify-center p-4 md:p-8">
-             <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl shadow-indigo-900/5 relative overflow-hidden"
-              >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500/0 via-indigo-500/50 to-indigo-500/0 opacity-50" />
-                  <div className="mb-4 md:mb-8 text-center">
-                    <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-1 md:mb-2">{t('voiceCommandCenter')}</h2>
-                    <p className="text-xs md:text-sm text-slate-500 font-medium">"{t('voicePrompt')}"</p>
-                  </div>
-                  <LiveAgent />
-             </motion.div>
-          </div>
-        );
       case 'morning-check':
         return <MorningCheck />;
       case 'study-sprint':
@@ -66,7 +48,7 @@ const AppContent = () => {
       case 'profile':
         return <StudentProfile />;
       default:
-        return <LiveAgent />;
+        return null;
     }
   };
 
@@ -199,19 +181,39 @@ const AppContent = () => {
 
         {/* Content View */}
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 scroll-smooth">
-          <div className="max-w-5xl mx-auto h-full">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeView}
-                initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -15, scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className="h-full"
-              >
-                {renderContent()}
-              </motion.div>
-            </AnimatePresence>
+          <div className="max-w-5xl mx-auto h-full relative">
+            
+            {/* Always render LiveAgent so connection doesn't drop, but hide it if not active */}
+            <div className={`min-h-full flex-col items-center justify-center p-4 md:p-8 ${activeView === 'coach' ? 'flex' : 'hidden'}`}>
+               <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl shadow-indigo-900/5 relative overflow-hidden"
+                >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500/0 via-indigo-500/50 to-indigo-500/0 opacity-50" />
+                    <div className="mb-4 md:mb-8 text-center">
+                      <h2 className="text-lg md:text-xl font-bold text-slate-900 mb-1 md:mb-2">{t('voiceCommandCenter')}</h2>
+                      <p className="text-xs md:text-sm text-slate-500 font-medium">"{t('voicePrompt')}"</p>
+                    </div>
+                    <LiveAgent />
+               </motion.div>
+            </div>
+
+            {activeView !== 'coach' && (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeView}
+                  initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -15, scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="h-full"
+                >
+                  {renderContent()}
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
         </div>
       </main>
