@@ -290,6 +290,10 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
               {
                 name: "get_timer_status",
                 description: "Get the current status of the study timer."
+              },
+              {
+                name: "get_current_datetime",
+                description: "Get the exact current date and time."
               }
             ]
           }]
@@ -355,6 +359,13 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
                             isActive: studyControlsRef.current.isActive,
                             topic: studyControlsRef.current.topic
                         };
+                    } else if (call.name === 'get_current_datetime') {
+                        const now = new Date();
+                        result = {
+                            date: now.toLocaleDateString(),
+                            time: now.toLocaleTimeString(),
+                            day: now.toLocaleDateString('en-US', { weekday: 'long' })
+                        };
                     } else {
                         return {
                             id: call.id,
@@ -374,6 +385,11 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
                     functionResponses: responses
                 });
               }
+            }
+            
+            if (message.serverContent?.interrupted) {
+                playerRef.current?.stop();
+                setIsSpeaking(false);
             }
             
             if (message.serverContent?.turnComplete) {

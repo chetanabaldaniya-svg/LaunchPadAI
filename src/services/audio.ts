@@ -4,6 +4,7 @@ export class AudioStreamPlayer {
   private queue: Float32Array[] = [];
   private isPlaying: boolean = false;
   private sampleRate: number = 24000;
+  private activeSources: AudioBufferSourceNode[] = [];
 
   constructor(sampleRate: number = 24000) {
     this.sampleRate = sampleRate;
@@ -50,13 +51,33 @@ export class AudioStreamPlayer {
       source.buffer = buffer;
       source.connect(this.audioContext.destination);
       source.start(this.nextStartTime);
+      
+      source.onended = () => {
+        this.activeSources = this.activeSources.filter(s => s !== source);
+      };
+      this.activeSources.push(source);
+      
       this.nextStartTime += buffer.duration;
     }
     
     this.isPlaying = true;
   }
 
+  stop() {
+    this.queue = [];
+    this.activeSources.forEach(source => {
+      try {
+        source.stop();
+      } catch (e) {
+        // Ignore errors if already stopped
+      }
+    });
+    this.activeSources = [];
+    this.nextStartTime = 0;
+  }
+
   async close() {
+    this.stop();
     if (this.audioContext.state !== 'closed') {
       await this.audioContext.close();
     }
