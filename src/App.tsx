@@ -154,6 +154,14 @@ const AppContent = () => {
           <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
              <Clock />
           </div>
+          <button 
+            onClick={() => {
+              import('./services/schoolData').then(m => m.schoolDataService.loadDemoData());
+            }}
+            className="w-full py-2 px-4 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors"
+          >
+            Load Demo Data
+          </button>
           <div className="flex items-center justify-between gap-2">
             <LanguageSelector />
             <div className="flex items-center gap-1.5 px-2 py-1 bg-indigo-50 rounded-full border border-indigo-100">

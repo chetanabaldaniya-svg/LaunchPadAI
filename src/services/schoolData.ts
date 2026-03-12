@@ -59,6 +59,32 @@ class SchoolDataService {
     return this.data.stats || { ...INITIAL_SCHOOL_DATA.stats };
   }
 
+  loadDemoData() {
+    this.data = {
+      ...INITIAL_SCHOOL_DATA,
+      stats: {
+        focusPoints: 1250,
+        currentStreak: 14,
+        longestStreak: 21,
+        lastStudyDate: new Date().toISOString().split('T')[0]
+      },
+      progress: [
+        { id: '1', subjectName: 'Math', currentGrade: 92, targetGrade: 95, studyHours: 24, lastUpdated: new Date().toISOString().split('T')[0] },
+        { id: '2', subjectName: 'Science', currentGrade: 96, targetGrade: 95, studyHours: 18, lastUpdated: new Date().toISOString().split('T')[0] },
+        { id: '3', subjectName: 'History', currentGrade: 88, targetGrade: 90, studyHours: 15, lastUpdated: new Date().toISOString().split('T')[0] },
+        { id: '4', subjectName: 'English', currentGrade: 94, targetGrade: 92, studyHours: 16, lastUpdated: new Date().toISOString().split('T')[0] },
+        { id: '5', subjectName: 'Physics', currentGrade: 85, targetGrade: 85, studyHours: 22, lastUpdated: new Date().toISOString().split('T')[0] }
+      ],
+      exams: [
+        { id: '1', subject: 'History', date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], topics: 'World War II causes and key battles' },
+        { id: '2', subject: 'Math', date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], topics: 'Quadratic equations' },
+      ]
+    };
+    this.save();
+    window.dispatchEvent(new Event('statsUpdated'));
+    window.dispatchEvent(new Event('dataUpdated'));
+  }
+
   getData(category: SchoolDataCategory): any {
     if (category === 'timetable') {
       return this.getTimetable();
