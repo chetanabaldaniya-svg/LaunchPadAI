@@ -3,10 +3,11 @@ import React, { useEffect, useRef } from 'react';
 interface AudioVisualizerProps {
   isListening: boolean;
   isSpeaking: boolean;
+  isConnecting?: boolean;
   audioStream?: MediaStream;
 }
 
-export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isListening, isSpeaking, audioStream }) => {
+export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isListening, isSpeaking, isConnecting, audioStream }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -129,7 +130,13 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isListening, i
         // Core dot
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(16, 185, 129, ${opacity})`; // Emerald
+        
+        // Use yellow for connecting, emerald for ready
+        if (isConnecting) {
+          ctx.fillStyle = `rgba(250, 204, 21, ${opacity})`; // Yellow-400
+        } else {
+          ctx.fillStyle = `rgba(16, 185, 129, ${opacity})`; // Emerald
+        }
         ctx.fill();
         
         // Outer ripple (occasional)
@@ -140,7 +147,11 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isListening, i
           
           ctx.beginPath();
           ctx.arc(centerX, centerY, rippleRadius, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(16, 185, 129, ${rippleOpacity * 0.5})`;
+          if (isConnecting) {
+            ctx.strokeStyle = `rgba(250, 204, 21, ${rippleOpacity * 0.5})`;
+          } else {
+            ctx.strokeStyle = `rgba(16, 185, 129, ${rippleOpacity * 0.5})`;
+          }
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -149,7 +160,12 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isListening, i
         ctx.font = '10px Inter, sans-serif';
         ctx.fillStyle = 'rgba(148, 163, 184, 0.8)'; // Slate-400
         ctx.textAlign = 'center';
-        ctx.fillText(isListening ? "Listening..." : "Ready", centerX, height - 10);
+        
+        let statusText = "Ready";
+        if (isConnecting) statusText = "Connecting...";
+        else if (isListening) statusText = "Listening...";
+        
+        ctx.fillText(statusText, centerX, height - 10);
       }
 
       animationRef.current = requestAnimationFrame(draw);
@@ -163,7 +179,7 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ isListening, i
         audioContext.close();
       }
     };
-  }, [isListening, isSpeaking, audioStream]);
+  }, [isListening, isSpeaking, isConnecting, audioStream]);
 
   // Helper function for rounded rectangles
   const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {

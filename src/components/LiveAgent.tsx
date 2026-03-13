@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const LiveAgent: React.FC = () => {
-  const { connect, disconnect, isConnected, isListening, isSpeaking, error, audioStream, isCameraOn, toggleCamera, videoStream, isMuted, toggleMute } = useLiveAgent();
+  const { connect, disconnect, isConnected, isConnecting, isListening, isSpeaking, error, audioStream, isCameraOn, toggleCamera, videoStream, isMuted, toggleMute } = useLiveAgent();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [speechRate, setSpeechRate] = useState(25); // Default to slow/deliberate as requested
   const [sessionDuration, setSessionDuration] = useState(0);
@@ -49,7 +49,7 @@ export const LiveAgent: React.FC = () => {
   }, []);
 
   const handleToggleConnection = () => {
-    if (isConnected) {
+    if (isConnected || isConnecting) {
       disconnect();
     } else {
       connect(speechRate);
@@ -69,8 +69,8 @@ export const LiveAgent: React.FC = () => {
     <div className="flex flex-col items-center gap-3 md:gap-6 w-full max-w-md mx-auto">
       {/* Status Indicator */}
       <div className="flex items-center gap-2 text-xs md:text-sm font-medium tracking-wider uppercase text-slate-500">
-        <div className={`w-2 h-2 rounded-full ${isConnected ? (isMuted ? 'bg-orange-500 shadow-[0_0_10px_#f97316]' : 'bg-emerald-600 shadow-[0_0_10px_#059669]') : 'bg-slate-300'}`} />
-        {isConnected ? (isMuted ? 'Muted' : (isSpeaking ? t('agentSpeaking') : t('listening'))) : t('offline')}
+        <div className={`w-2 h-2 rounded-full ${isConnected ? (isMuted ? 'bg-orange-500 shadow-[0_0_10px_#f97316]' : 'bg-emerald-600 shadow-[0_0_10px_#059669]') : isConnecting ? 'bg-yellow-400 animate-pulse shadow-[0_0_10px_#facc15]' : 'bg-slate-300'}`} />
+        {isConnected ? (isMuted ? 'Muted' : (isSpeaking ? t('agentSpeaking') : t('listening'))) : isConnecting ? 'Connecting...' : t('offline')}
         {isConnected && (
           <span className="ml-2 font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
             {formatDuration(sessionDuration)}
@@ -81,7 +81,7 @@ export const LiveAgent: React.FC = () => {
       {/* Visualizer */}
       <div className="w-full relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-green-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
-        <AudioVisualizer isListening={isListening} isSpeaking={isSpeaking} audioStream={audioStream || undefined} />
+        <AudioVisualizer isListening={isListening} isSpeaking={isSpeaking} isConnecting={isConnecting} audioStream={audioStream || undefined} />
       </div>
 
       {/* Controls */}
@@ -115,18 +115,22 @@ export const LiveAgent: React.FC = () => {
             transition-all duration-300 shadow-xl
             ${isConnected 
               ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100' 
+              : isConnecting
+              ? 'bg-yellow-50 text-yellow-500 border border-yellow-200 cursor-wait'
               : 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white border border-indigo-400 hover:from-indigo-600 hover:to-violet-700 shadow-[0_0_30px_rgba(79,70,229,0.4)]'}
           `}
-          title={isConnected ? "End Session" : "Start Session"}
+          title={isConnected ? "End Session" : isConnecting ? "Connecting..." : "Start Session"}
         >
           {isConnected ? (
             <PhoneOff className="w-6 h-6 md:w-8 md:h-8" />
+          ) : isConnecting ? (
+            <div className="w-6 h-6 md:w-8 md:h-8 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin" />
           ) : (
             <Mic className="w-6 h-6 md:w-8 md:h-8" />
           )}
           
           {/* Ripple Effect when connecting */}
-          {!isConnected && (
+          {(!isConnected && !isConnecting) && (
             <span className="absolute inset-0 rounded-full border border-indigo-500/50 animate-ping" />
           )}
         </motion.button>
@@ -172,7 +176,7 @@ export const LiveAgent: React.FC = () => {
       )}
 
       {/* Speed Slider */}
-      {!isConnected && (
+      {(!isConnected && !isConnecting) && (
         <div className="w-full px-3 py-2 md:px-4 md:py-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-1 md:gap-2">
           <div className="flex items-center justify-between text-[10px] md:text-xs font-medium text-slate-500 uppercase tracking-wider">
             <div className="flex items-center gap-1">
@@ -206,6 +210,8 @@ export const LiveAgent: React.FC = () => {
       <p className="text-xs text-center text-slate-400 max-w-[200px]">
         {isConnected 
           ? t('tapToDisconnect') 
+          : isConnecting
+          ? 'Connecting to LaunchPad AI...'
           : t('tapToLaunch')}
       </p>
     </div>

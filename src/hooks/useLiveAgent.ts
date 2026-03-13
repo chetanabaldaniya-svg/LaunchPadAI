@@ -7,6 +7,7 @@ import { useStudySession } from '../context/StudyContext';
 
 export function useLiveAgent() {
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,6 +106,7 @@ export function useLiveAgent() {
 
   const connect = useCallback(async (initialSpeed = 50) => {
     try {
+      setIsConnecting(true);
       setError(null);
       const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) throw new Error('Gemini API Key is missing');
@@ -122,6 +124,11 @@ export function useLiveAgent() {
             });
         }
       });
+
+      // Start recording immediately to give instant feedback to the user
+      // Audio frames will be dropped until sessionRef.current is populated
+      await recorderRef.current.start();
+      setAudioStream(recorderRef.current.getStream() || null);
 
       const now = new Date();
       
@@ -302,6 +309,7 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
           onopen: async () => {
             console.log('Session connected');
             setIsConnected(true);
+            setIsConnecting(false);
             setIsListening(true);
           },
           onmessage: async (message: any) => {
@@ -406,20 +414,22 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
             console.error('Session error:', err);
             setError(err.message);
             setIsConnected(false);
+            setIsConnecting(false);
           }
         }
       });
 
       sessionRef.current = session;
-      
-      // Start recording AFTER session is assigned to ref to avoid race condition
-      await recorderRef.current?.start();
-      setAudioStream(recorderRef.current?.getStream() || null);
 
     } catch (err: any) {
       console.error('Connection failed:', err);
       setError(err.message || 'Failed to connect');
+      if (recorderRef.current) {
+        recorderRef.current.stop();
+      }
+      setAudioStream(null);
       setIsConnected(false);
+      setIsConnecting(false);
     }
   }, [language]);
 
@@ -441,6 +451,7 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
     stopCamera();
     
     setIsConnected(false);
+    setIsConnecting(false);
     setIsListening(false);
     setIsSpeaking(false);
     setAudioStream(null);
@@ -457,6 +468,7 @@ ${currentExams.length > 0 ? currentExams.map(e => `- ${e.date}: ${e.subject} (To
     connect,
     disconnect,
     isConnected,
+    isConnecting,
     isListening,
     isSpeaking,
     error,
